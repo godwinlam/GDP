@@ -313,7 +313,7 @@ const TabOneScreen: React.FC<TabOneScreenProps> = () => {
     <View style={styles.container}>
       <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
-          <Text style={styles.welcomeText}>{t.welcomeBack}</Text>
+          <Text style={styles.welcomeText}>{t.welcomeBack} NAME</Text>
 
           <TouchableOpacity
             style={styles.languageButton}
