@@ -4,7 +4,7 @@
     "slug": "GdpApp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": ["./assets/images/icon.png", "./assets/icons/font.ttf"],
     "scheme": "gdpapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
