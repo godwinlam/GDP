@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: "600",
-    color: "blacl",
+    color: "black",
     marginLeft: 15,
   },
   sectionTitle: {
@@ -485,7 +485,8 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   alertOverlay: {
-    position: "fixed",
+    // position: "fixed",
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,

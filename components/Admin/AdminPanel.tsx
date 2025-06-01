@@ -85,13 +85,13 @@ export default function AdminPanelScreen() {
           <Text style={styles.buttonText}>Reward Management</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.menuButton}
           onPress={() => router.push("/(admin)/bankTransfer-management")}
         >
           <AntDesign name="bank" size={24} color="white" />
           <Text style={styles.buttonText}>Bank Transfer Management</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <TouchableOpacity
           style={styles.menuButton}
@@ -144,6 +144,14 @@ export default function AdminPanelScreen() {
           <FontAwesome5 name="coins" size={24} color="white" />
           <Text style={styles.buttonText}>Token Management</Text>
         </TouchableOpacity>
+
+        {/* <TouchableOpacity
+          style={[styles.menuButton, { backgroundColor: '#FF5722' }]}
+          onPress={() => router.push("/(admin)/master-access")}
+        >
+          <MaterialIcons name="admin-panel-settings" size={24} color="white" />
+          <Text style={styles.buttonText}>Master Access</Text>
+        </TouchableOpacity> */}
       </View>
     </ScrollView>
   );

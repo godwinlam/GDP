@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Platform, Image } from 'react-native';
 import { collection, query, where, onSnapshot, doc, writeBatch } from 'firebase/firestore';
 import { db, auth } from '@/firebase';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -8,6 +8,7 @@ import LottieView from 'lottie-react-native';
 import OTCListingModal from '../Investment/OTCListingModal';
 import ConvertGDPModal from '../Investment/ConvertGDPModal';
 import GDPActionModal from './GDPActionModal';
+
 
 interface AssetCounts {
   [key: string]: number;
@@ -27,7 +28,7 @@ export const useAssetSummary = () => {
     totalBalance: 0,
   });
   const [loading, setLoading] = useState(false);
-  const [userData, setUserData] = useState<User | null>(null); 
+  const [userData, setUserData] = useState<User | null>(null);
 
   useEffect(() => {
     if (!auth.currentUser) return;
@@ -41,7 +42,7 @@ export const useAssetSummary = () => {
         setUserData(data);
         console.log("User data fetched:", data);
         console.log("User balance:", data.balance);
-        
+
         setAssetSummary(prev => ({
           ...prev,
           totalBalance: data.balance || 0,
@@ -51,18 +52,18 @@ export const useAssetSummary = () => {
 
     // Subscribe to GDP purchases
     const gdpPurchasesRef = collection(db, "gdpPurchases");
-    const q = query(gdpPurchasesRef, 
+    const q = query(gdpPurchasesRef,
       where("userId", "==", auth.currentUser.uid)
     );
 
     const gdpUnsubscribe = onSnapshot(q, async (querySnapshot) => {
       let totalGDP = 0;
       const counts: AssetCounts = {};
-      
+
       // Delete empty OTC purchases
       const batch = writeBatch(db);
       let hasEmptyPurchases = false;
-      
+
       querySnapshot.forEach((doc) => {
         const purchase = doc.data() as GDPPurchase;
         const amount = purchase.amount || purchase.gdpPurchased || 0;
@@ -171,7 +172,7 @@ export default function Assets() {
     if (!showListingModal && !showConvertModal && userData?.uid) {
       // Give Firestore a moment to update
       setTimeout(() => {
-        const unsubscribe = onSnapshot(doc(db, "users", userData.uid), () => {});
+        const unsubscribe = onSnapshot(doc(db, "users", userData.uid), () => { });
         return () => unsubscribe();
       }, 500);
     }
@@ -196,10 +197,26 @@ export default function Assets() {
 
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.summaryContainer}>
-        <View style={styles.summaryItem}>
-          <Text style={styles.label}>{t.available} {t.balance}</Text>
-          <Text style={styles.value}>{formatAmount(userData?.balance || 0)}</Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+
+        <View style={styles.summaryContainer}>
+          <View style={styles.summaryItem}>
+            <Text style={styles.label}>{t.available} {t.balance}</Text>
+            <Text style={styles.value}>{formatAmount(userData?.balance || 0)}</Text>
+          </View>
+        </View>
+
+        <View style={styles.balanceContainer}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={styles.bitcoinImageContainer}>
+              <Image
+                source={require("@/assets/images/GDPCoin01.png")}
+                style={styles.bitcoinImage}
+                resizeMode="contain"
+              />
+            </View>
+            <Text style={styles.balanceAmount}>{userData?.token?.toLocaleString() || '0'}</Text>
+          </View>
         </View>
       </View>
 
@@ -229,16 +246,16 @@ export default function Assets() {
                     ref={(ref) => (animationRefs.current[animationFile] = ref)}
                     source={
                       animationFile === 'star-1.json'
-                        ? require('@/assets/animations/star-1.json'):
-                        animationFile ==='2-star.json'
-                        ? require('@/assets/animations/2-star.json')
-                        : animationFile === '3-star.json'
-                        ? require('@/assets/animations/3-star.json')
-                        : animationFile === '4-star.json'
-                        ? require('@/assets/animations/4-star.json')
-                        : animationFile === '5-star.json'
-                        ? require('@/assets/animations/5-star.json')
-                        : require('@/assets/animations/Crown.json')
+                        ? require('@/assets/animations/star-1.json') :
+                        animationFile === '2-star.json'
+                          ? require('@/assets/animations/2-star.json')
+                          : animationFile === '3-star.json'
+                            ? require('@/assets/animations/3-star.json')
+                            : animationFile === '4-star.json'
+                              ? require('@/assets/animations/4-star.json')
+                              : animationFile === '5-star.json'
+                                ? require('@/assets/animations/5-star.json')
+                                : require('@/assets/animations/Crown.json')
                     }
                     autoPlay
                     loop
@@ -305,10 +322,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   summaryContainer: {
-    padding: 16,
-    backgroundColor: '#ffffff',
-    marginBottom: 16,
-    borderRadius: 8,
+    marginTop: 10,
+    justifyContent: 'center',
     ...Platform.select({
       ios: {
         boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
@@ -499,5 +514,36 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     backgroundColor: '#757575',
+  },
+  balanceContainer: {
+    justifyContent: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  bitcoinImageContainer: {
+    width: 50,
+    height: 50,
+    marginRight: 20,
+    marginLeft: 30,
+    backgroundColor: 'blue',
+    borderRadius: 12,
+  },
+  bitcoinImage: {
+    width: "100%",
+    height: "100%",
+  },
+  balanceAmount: {
+    color: 'green',
+    fontSize: 30,
+    fontWeight: 'bold',
   },
 });

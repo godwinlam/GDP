@@ -25,8 +25,8 @@
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
-        <data android:scheme="myapp"/>
-        <data android:scheme="com.godwin00931.Expo52Test"/>
+        <data android:scheme="gdpapp"/>
+        <data android:scheme="com.godwin00931.GdpApp"/>
       </intent-filter>
     </activity>
   </application>

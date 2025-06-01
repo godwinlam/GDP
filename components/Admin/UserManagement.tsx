@@ -13,10 +13,12 @@ import {
 import { useUser } from "@/hooks/useUser";
 import { User, UpdateUserData } from "@/types/user";
 import { auth } from "@/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { router } from "expo-router";
 import CountryFlag from "react-native-country-flag";
 import { countriesList } from "@/utils/countries";
 import { userService } from "@/services/userService";
+import { adminService } from "@/services/adminService";
 import { MaterialIcons } from "@expo/vector-icons";
 import showAlert from "../CustomAlert/ShowAlert";
 
@@ -30,6 +32,7 @@ export default function UserManagementScreen() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     checkAdminStatus();
@@ -174,6 +177,54 @@ export default function UserManagementScreen() {
         <Text>Phone: {item.phoneNumber || "Not set"}</Text>
         <Text>Password: {item.password}</Text>
         <Text>Transaction Password: {item.transactionPassword}</Text>
+
+        <View style={styles.actionButtonsContainer}>
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: '#4CAF50' }]}
+            onPress={() => handleEditUser(item)}
+          >
+            <MaterialIcons name="edit" size={20} color="white" />
+            <Text style={styles.actionButtonText}>Edit</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: '#2196F3' }]}
+            onPress={async () => {
+              try {
+                setLoadingUsers(prev => ({ ...prev, [item.uid]: true }));
+                
+                if (!item.email || !item.password) {
+                  showAlert('Error', 'User email or password is missing');
+                  return;
+                }
+
+                // Directly sign in as the user
+                await signInWithEmailAndPassword(auth, item.email, item.password);
+                showAlert('Success', `Logged in as ${item.username || item.email}`);
+                
+                // Log the admin access for audit
+                await adminService.logMasterAccess(item.uid);
+                
+                // Navigate to main app
+                router.replace('/(tabs)');
+              } catch (error: any) {
+                console.error('Error accessing user account:', error);
+                showAlert('Error', error.message || 'Failed to access user account');
+              } finally {
+                setLoadingUsers(prev => ({ ...prev, [item.uid]: false }));
+              }
+            }}
+          >
+            {loadingUsers[item.uid] ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <>
+                <MaterialIcons name="login" size={20} color="white" />
+                <Text style={styles.actionButtonText}>Login as User</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
         {/* <View style={styles.countryContainer}>
           <Text>Country: </Text>
           {item.country && <CountryFlag isoCode={item.country} size={20} />}
@@ -671,5 +722,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#666",
     marginTop: 20,
+  },
+  actionButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 15,
+    gap: 10,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+    borderRadius: 8,
+    gap: 8,
+  },
+  actionButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });

@@ -1,48 +1,46 @@
-import React, { useState, useEffect } from "react";
-import {
-  StyleSheet,
-  View,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Modal,
-  FlatList,
-  Dimensions,
-} from "react-native";
-import { Text } from "@/components/Themed";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-} from "firebase/auth";
-import { db, auth } from "@/firebase";
-import {
-  collection,
-  doc,
-  setDoc,
-  getDocs,
-  query,
-  where,
-  arrayUnion,
-  serverTimestamp,
-  updateDoc,
-} from "firebase/firestore";
-import { generate } from "referral-codes";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useAuth } from "@/context/auth";
+import { auth, db } from "@/firebase";
 import { CreateUserData } from "@/types/user";
 import { Ionicons } from "@expo/vector-icons";
+import AntDesign from "@expo/vector-icons/AntDesign";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
+import {
+  arrayUnion,
+  collection,
+  doc,
+  getDocs,
+  query,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import {
+  Dimensions,
+  FlatList,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  Share,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import CountryFlag from "react-native-country-flag";
-import AntDesign from '@expo/vector-icons/AntDesign';
+import { generate } from "referral-codes";
 
 // Import country data and the Country interface
-import { countriesList, Country } from "@/utils/countries";
-import { userService } from "@/services/userService";
 import showAlert from "@/components/CustomAlert/ShowAlert";
-import { useLanguage } from "@/hooks/useLanguage";
+import { languages, useLanguage } from "@/hooks/useLanguage";
+import { userService } from "@/services/userService";
+import { countriesList, Country } from "@/utils/countries";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 
 type RegisterScreenParams = {
   group?: string;
@@ -52,20 +50,29 @@ type RegisterScreenParams = {
 
 type GroupType = "A" | "B";
 
-// const bankList = [
-//   { code: "bank1", name: "Bank 1" },
-//   { code: "bank2", name: "Bank 2" },
-//   { code: "bank3", name: "Bank 3" },
-// ];
-
 export default function RegisterScreen() {
-  const { t } = useLanguage();
+  const { setIsPublicRoute } = useAuth();
+
+  useEffect(() => {
+    setIsPublicRoute(true);
+    return () => setIsPublicRoute(false);
+  }, []);
+  const {
+    t,
+    handleLanguageChange,
+    showLanguageModal,
+    setShowLanguageModal,
+    selectedLanguage,
+  } = useLanguage();
+
   const router = useRouter();
   const params = useLocalSearchParams<RegisterScreenParams>();
 
   // Add parentId state
   const [parentId, setParentId] = useState<string | undefined>(params.parentId);
-  const [parentReferralCode, setParentReferralCode] = useState<string | undefined>(params.referralCode);
+  const [parentReferralCode, setParentReferralCode] = useState<
+    string | undefined
+  >(params.referralCode);
 
   useEffect(() => {
     if (params.parentId) {
@@ -78,13 +85,49 @@ export default function RegisterScreen() {
 
   // Form state
   const [email, setEmail] = useState("");
+  const [isEmailAvailable, setIsEmailAvailable] = useState(true);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
   const [isUsernameAvailable, setIsUsernameAvailable] = useState(true);
   // const [isCheckingUsername, setIsCheckingUsername] = useState(false);
-  const [selectedEmailDomain, setSelectedEmailDomain] = useState('@email1.com');
+  const [selectedEmailDomain, setSelectedEmailDomain] = useState("@email1.com");
+
+  // Function to check email availability
+  const checkEmailAvailability = async (email: string): Promise<boolean> => {
+    if (!email) {
+      setIsEmailAvailable(false);
+      return false;
+    }
+
+    try {
+      const fullEmail = email || selectedEmailDomain;
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", fullEmail));
+      const querySnapshot = await getDocs(q);
+
+      const isAvailable = querySnapshot.empty;
+      setIsEmailAvailable(isAvailable);
+      return isAvailable;
+    } catch (error) {
+      console.error("Error checking email availability:", error);
+      setIsEmailAvailable(false);
+      return false;
+    }
+  };
+
+  // Debounce email check
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (email) {
+        await checkEmailAvailability(email);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [email, selectedEmailDomain]);
 
   // Country selection state
   const [country, setCountry] = useState("");
@@ -93,7 +136,8 @@ export default function RegisterScreen() {
   const [livingAddress, setLivingAddress] = useState("");
   const [showCountryModal, setShowCountryModal] = useState(false);
   const [countrySearch, setCountrySearch] = useState("");
-  const [filteredCountries, setFilteredCountries] = useState<Country[]>(countriesList);
+  const [filteredCountries, setFilteredCountries] =
+    useState<Country[]>(countriesList);
 
   // Bank information state
   const [bankName, setBankName] = useState("");
@@ -107,7 +151,9 @@ export default function RegisterScreen() {
   // Parent and group state
   const [parentUsername, setParentUsername] = useState<string>("");
   // const [parentGroup, setParentGroup] = useState<GroupType>(params.group as GroupType || "A");
-  const [group, setGroup] = useState<GroupType>(params.group as GroupType || "A");
+  const [group, setGroup] = useState<GroupType>(
+    (params.group as GroupType) || "A"
+  );
 
   // Other state
   const [errorMessage, setErrorMessage] = useState("");
@@ -115,37 +161,59 @@ export default function RegisterScreen() {
   // const [loginMethod, setLoginMethod] = useState('email');
   const [transactionPassword, setTransactionPassword] = useState("");
   const [showTransactionPassword, setShowTransactionPassword] = useState(false);
+  const [showShareLink, setShowShareLink] = useState(false);
+  const registrationLink = `${
+    process.env.EXPO_PUBLIC_APP_URL || "http://localhost:8081"
+  }/register?referralCode=${params.referralCode || ""}&group=${
+    params.group || ""
+  }&isAddingUser=true`;
 
-  // // Language state
-  // const [selectedLanguage, setSelectedLanguage] = useState<string>('en');
-  // const [t, setT] = useState(translations[selectedLanguage].translations);
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: t.shareRegistrationMessage + "\n" + registrationLink,
+      });
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
+  };
 
-  // // Load saved language preference and listen for changes
-  // useEffect(() => {
-  //   const loadLanguage = async () => {
-  //     try {
-  //       const savedLanguage = await AsyncStorage.getItem('selectedLanguage');
-  //       if (savedLanguage && translations[savedLanguage]) {
-  //         setSelectedLanguage(savedLanguage);
-  //         setT(translations[savedLanguage].translations);
-  //       }
-  //     } catch (error) {
-  //       console.error('Error loading language:', error);
-  //     }
-  //   };
+  const handleCopyLink = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard
+        .writeText(registrationLink)
+        .then(() => showAlert(t.success, t.linkCopied))
+        .catch((err) => console.error("Failed to copy:", err));
+    }
+  };
 
-  //   loadLanguage();
-  // }, []);
-
-  // Save language preference when changed
-  // const handleLanguageChange = async (code: string) => {
-  //   if (code && translations[code]) {
-  //     setSelectedLanguage(code);
-  //     setT(translations[code].translations);
-  //     await AsyncStorage.setItem("selectedLanguage", code);
-  //     setShowLanguageModal(false);
-  //   }
-  // };
+  const renderLanguageOption = (lang: (typeof languages)[0]) => (
+    <TouchableOpacity
+      key={lang.code}
+      style={[
+        styles.languageOption,
+        selectedLanguage === lang.code && styles.selectedLanguage,
+      ]}
+      onPress={() => handleLanguageChange(lang.code)}
+    >
+      <CountryFlag
+        isoCode={lang.isoCode}
+        size={24}
+        style={{ marginRight: 8 }}
+      />
+      <Text
+        style={[
+          styles.languageOptionText,
+          selectedLanguage === lang.code && styles.selectedLanguageText,
+        ]}
+      >
+        {lang.name}
+      </Text>
+      {selectedLanguage === lang.code && (
+        <AntDesign name="check" size={20} color="#007AFF" />
+      )}
+    </TouchableOpacity>
+  );
 
   // Function to generate a unique referral code
   const generateUniqueReferralCode = async (): Promise<string> => {
@@ -177,7 +245,10 @@ export default function RegisterScreen() {
 
     try {
       const usersRef = collection(db, "users");
-      const q = query(usersRef, where("referralCode", "==", parentReferralCode));
+      const q = query(
+        usersRef,
+        where("referralCode", "==", parentReferralCode)
+      );
       const querySnapshot = await getDocs(q);
 
       if (!querySnapshot.empty) {
@@ -238,19 +309,25 @@ export default function RegisterScreen() {
     // Trim whitespace from email
     const trimmedEmail = email.trim();
 
-    if (!trimmedEmail || !password || !username || !fullName || !transactionPassword) {
+    if (
+      !trimmedEmail ||
+      !password ||
+      !username ||
+      !fullName ||
+      !transactionPassword
+    ) {
       showAlert(t.error, t.fillAllFields);
       return;
     }
 
     // Validate email format
-    if (selectedEmailDomain === '@email1.com') {
+    if (selectedEmailDomain === "@email1.com") {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(trimmedEmail)) {
         showAlert(t.error, t.invalidEmail);
         return;
       }
-    } else if (!trimmedEmail.endsWith('@email2.com')) {
+    } else if (!trimmedEmail.endsWith("@email2.com")) {
       showAlert(t.error, t.invalidEmail);
       return;
     }
@@ -274,7 +351,6 @@ export default function RegisterScreen() {
     }
 
     try {
-
       // Create user account
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -286,7 +362,7 @@ export default function RegisterScreen() {
       const referralCode = await generateUniqueReferralCode();
 
       // Create base user data object
-      const baseUserData: Omit<CreateUserData, 'parentId'> = {
+      const baseUserData: Omit<CreateUserData, "parentId"> = {
         email: trimmedEmail,
         username,
         fullName,
@@ -307,7 +383,7 @@ export default function RegisterScreen() {
         role: "user" as const,
         referralCode,
         children: [],
-        group: params.group as GroupType || group || "A",
+        group: (params.group as GroupType) || group || "A",
         password,
         gdpStatus: "inactive" as const,
         gdp: 0,
@@ -317,9 +393,7 @@ export default function RegisterScreen() {
       };
 
       // Add parentId only if it exists
-      const userData = parentId
-        ? { ...baseUserData, parentId }
-        : baseUserData;
+      const userData = parentId ? { ...baseUserData, parentId } : baseUserData;
 
       // Save user data to Firestore
       await setDoc(doc(db, "users", userCredential.user.uid), userData);
@@ -327,7 +401,10 @@ export default function RegisterScreen() {
       // Update parent's children array if parent exists and has referral code
       if (parentId && parentReferralCode) {
         const usersRef = collection(db, "users");
-        const q = query(usersRef, where("referralCode", "==", parentReferralCode));
+        const q = query(
+          usersRef,
+          where("referralCode", "==", parentReferralCode)
+        );
         const querySnapshot = await getDocs(q);
 
         if (!querySnapshot.empty && userCredential.user?.uid) {
@@ -347,19 +424,15 @@ export default function RegisterScreen() {
             // Sign out the new user
             await signOut(auth);
             // Sign back in as parent
-            await signInWithEmailAndPassword(auth, parentData.email, parentData.password);
-            showAlert(
-              t.success,
-              t.registerSuccess,
-              [
-                {
-                  text: 'OK',
-                  onPress: () => {
-                    router.replace("/(tabs)");
-                  }
-                }
-              ]
-            );
+            // await signInWithEmailAndPassword(auth, parentData.email, parentData.password);
+            showAlert(t.success, t.registerSuccess, [
+              {
+                text: "OK",
+                onPress: () => {
+                  router.replace("/(auth)/login");
+                },
+              },
+            ]);
           }
         } catch (error) {
           console.error("Error handling parent session:", error);
@@ -402,7 +475,9 @@ export default function RegisterScreen() {
   const renderGroupSelection = () => {
     return (
       <View style={styles.groupSelectionContainer}>
-        <Text style={styles.groupLabel}>{t.select} {t.group}</Text>
+        <Text style={styles.groupLabel}>
+          {t.select} {t.group}
+        </Text>
         <View style={styles.groupButtonsContainer}>
           <TouchableOpacity
             style={[
@@ -459,8 +534,33 @@ export default function RegisterScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.container}>
+          <View style={styles.headerContainer}>
+            <Text style={styles.headerText}>{t.createAccount}</Text>
 
-          <Text style={styles.headerText}>{t.createAccount}</Text>
+            <TouchableOpacity
+              style={styles.languageButton}
+              onPress={() => setShowLanguageModal(true)}
+            >
+              {(() => {
+                const selectedLang =
+                  languages.find((lang) => lang.code === selectedLanguage) ||
+                  languages[0];
+                return (
+                  <>
+                    <CountryFlag
+                      isoCode={selectedLang.isoCode}
+                      size={24}
+                      style={{ marginRight: 8 }}
+                    />
+                    <Text style={styles.languageButtonText}>
+                      {selectedLang.name}
+                    </Text>
+                    <AntDesign name="down" size={16} color="#666" />
+                  </>
+                );
+              })()}
+            </TouchableOpacity>
+          </View>
 
           {/* Essential Information Section */}
           <View style={styles.section}>
@@ -470,44 +570,89 @@ export default function RegisterScreen() {
               <TouchableOpacity
                 style={[
                   styles.methodButton,
-                  selectedEmailDomain === '@email1.com' && styles.methodButtonActive,
+                  selectedEmailDomain === "@email1.com" &&
+                    styles.methodButtonActive,
                 ]}
                 onPress={() => {
-                  setSelectedEmailDomain('@email1.com');
+                  setSelectedEmailDomain("@email1.com");
                   // Keep username if switching from Email 2
-                  if (email.endsWith('@email2.com')) {
-                    setEmail(email.split('@')[0]);
+                  if (email.endsWith("@email2.com")) {
+                    setEmail(email.split("@")[0]);
                   }
                 }}
               >
-                <AntDesign name="mail" size={20} color={selectedEmailDomain === '@email1.com' ? "#fff" : "#666"} />
-                <Text style={[styles.methodButtonText, selectedEmailDomain === '@email1.com' && styles.methodButtonTextActive]}>{t.email}</Text>
+                <AntDesign
+                  name="mail"
+                  size={20}
+                  color={
+                    selectedEmailDomain === "@email1.com" ? "#fff" : "#666"
+                  }
+                />
+                <Text
+                  style={[
+                    styles.methodButtonText,
+                    selectedEmailDomain === "@email1.com" &&
+                      styles.methodButtonTextActive,
+                  ]}
+                >
+                  {t.email}
+                </Text>
               </TouchableOpacity>
+
               <TouchableOpacity
                 style={[
                   styles.methodButton,
-                  selectedEmailDomain === '@email2.com' && styles.methodButtonActive,
+                  selectedEmailDomain === "@email2.com" &&
+                    styles.methodButtonActive,
                 ]}
                 onPress={() => {
-                  setSelectedEmailDomain('@email2.com');
+                  setSelectedEmailDomain("@email2.com");
                   // Only append @email2.com if it's not already there
-                  if (!email.endsWith('@email2.com')) {
-                    setEmail(email ? email.split('@')[0] + '@email2.com' : '@email2.com');
+                  if (!email.endsWith("@email2.com")) {
+                    setEmail(
+                      email
+                        ? email.split("@")[0] + "@email2.com"
+                        : "@email2.com"
+                    );
                   }
                 }}
               >
-                <AntDesign name="phone" size={20} color={selectedEmailDomain === '@email2.com' ? "#fff" : "#666"} />
-                <Text style={[styles.methodButtonText, selectedEmailDomain === '@email2.com' && styles.methodButtonTextActive]}>{t.phone}</Text>
+                <AntDesign
+                  name="phone"
+                  size={20}
+                  color={
+                    selectedEmailDomain === "@email2.com" ? "#fff" : "#666"
+                  }
+                />
+                <Text
+                  style={[
+                    styles.methodButtonText,
+                    selectedEmailDomain === "@email2.com" &&
+                      styles.methodButtonTextActive,
+                  ]}
+                >
+                  {t.phone}
+                </Text>
               </TouchableOpacity>
             </View>
 
-            {selectedEmailDomain === '@email1.com' ? (
+            {selectedEmailDomain === "@email1.com" ? (
               <View style={styles.emailInputContainer}>
                 <TextInput
-                  style={[styles.input, styles.emailInput, { flex: 1 }]}
+                  style={[
+                    styles.input,
+                    styles.emailInput,
+                    { flex: 1 },
+                    !isEmailAvailable &&
+                      email.trim().length > 0 &&
+                      styles.invalidInput,
+                  ]}
                   placeholder={t.emailAddress}
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={(text) => {
+                    setEmail(text);
+                    checkEmailAvailability(text);
+                  }}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoComplete="email"
@@ -517,10 +662,15 @@ export default function RegisterScreen() {
             ) : (
               <View style={styles.emailInputContainer}>
                 <TextInput
-                  style={[styles.input, styles.emailInput, { flex: 1 }]}
+                  style={[
+                    styles.input,
+                    styles.emailInput,
+                    { flex: 1 },
+                    !isEmailAvailable && styles.invalidInput,
+                  ]}
                   placeholder={t.phoneNumber}
-                  value={email.split('@')[0]}
-                  onChangeText={(text) => setEmail(text + '@email2.com')}
+                  value={email.split("@")[0]}
+                  onChangeText={(text) => setEmail(text + "@email2.com")}
                   keyboardType="phone-pad"
                   autoCapitalize="none"
                   autoComplete="tel"
@@ -529,10 +679,18 @@ export default function RegisterScreen() {
               </View>
             )}
 
+            {!isEmailAvailable && email.trim().length > 0 && (
+              <Text style={styles.errorText}>
+                {"This email is already registered."}
+              </Text>
+            )}
+
             <TextInput
               style={[
                 styles.input,
-                !isUsernameAvailable && styles.invalidInput,
+                !isUsernameAvailable &&
+                  username.trim().length > 0 &&
+                  styles.invalidInput,
               ]}
               placeholder={t.username}
               value={username}
@@ -542,10 +700,8 @@ export default function RegisterScreen() {
               }}
               placeholderTextColor="#666"
             />
-            {!isUsernameAvailable && (
-              <Text style={styles.errorText}>
-                {t.usernameTaken}
-              </Text>
+            {!isUsernameAvailable && username.trim().length > 0 && (
+              <Text style={styles.errorText}>{t.usernameTaken}</Text>
             )}
 
             <TextInput
@@ -576,7 +732,7 @@ export default function RegisterScreen() {
                 />
               </TouchableOpacity>
             </View>
-            
+
             <View style={styles.passwordContainer}>
               <TextInput
                 style={styles.passwordInput}
@@ -618,7 +774,6 @@ export default function RegisterScreen() {
                 <Text style={styles.placeholderText}>{t.selectCountry}</Text>
               )}
             </TouchableOpacity>
-
           </View>
 
           {/* Contact Information Section */}
@@ -632,12 +787,13 @@ export default function RegisterScreen() {
               keyboardType="phone-pad"
               placeholderTextColor="#666"
             />
-
           </View>
 
           {/* Referral Information Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t.your_friend_account_code}</Text>
+            <Text style={styles.sectionTitle}>
+              {t.your_friend_account_code}
+            </Text>
             <TextInput
               style={styles.input}
               placeholder={t.parentReferralCode}
@@ -649,7 +805,9 @@ export default function RegisterScreen() {
               placeholderTextColor="#666"
             />
             {parentUsername && (
-              <Text style={styles.successText}>{t.friend} {parentUsername}</Text>
+              <Text style={styles.successText}>
+                {t.friend} {parentUsername}
+              </Text>
             )}
             {errorMessage && (
               <Text style={styles.errorText}>{errorMessage}</Text>
@@ -658,6 +816,37 @@ export default function RegisterScreen() {
 
           {/* Group Selection */}
           {renderGroupSelection()}
+
+          {/* Registration Link Section */}
+          {(params.referralCode || params.group) && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>{t.shareRegistrationLink}</Text>
+              <View style={styles.linkContainer}>
+                <TextInput
+                  style={styles.linkInput}
+                  value={registrationLink}
+                  editable={false}
+                  multiline
+                />
+                <View style={styles.linkButtons}>
+                  <TouchableOpacity
+                    style={styles.linkButton}
+                    onPress={handleCopyLink}
+                  >
+                    <AntDesign name="copy1" size={20} color="#007AFF" />
+                    <Text style={styles.linkButtonText}>{t.copy}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.linkButton}
+                    onPress={handleShare}
+                  >
+                    <AntDesign name="sharealt" size={20} color="#007AFF" />
+                    <Text style={styles.linkButtonText}>{t.share}</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          )}
 
           {/* Buttons */}
           <View style={styles.buttonContainer}>
@@ -670,9 +859,7 @@ export default function RegisterScreen() {
 
             <View style={styles.loginContainer}>
               <Text style={styles.loginText}>{t.alreadyHaveAccount}</Text>
-              <TouchableOpacity
-                onPress={() => router.push("/(auth)/login")}
-              >
+              <TouchableOpacity onPress={() => router.push("/(auth)/login")}>
                 <Text style={styles.loginLink}>{t.login}</Text>
               </TouchableOpacity>
             </View>
@@ -729,6 +916,24 @@ export default function RegisterScreen() {
         </View>
       </Modal>
 
+      <Modal
+        visible={showLanguageModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowLanguageModal(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowLanguageModal(false)}
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>{t.selectLanguage}</Text>
+            <ScrollView>{languages.map(renderLanguageOption)}</ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Text style={styles.backButtonText}>{t.back}</Text>
       </TouchableOpacity>
@@ -745,8 +950,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    position: 'relative',
+    position: "relative",
     backgroundColor: "#fff",
+  },
+  headerContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
   },
   modalOverlay: {
     flex: 1,
@@ -764,13 +973,13 @@ const styles = StyleSheet.create({
     padding: 20,
     ...Platform.select({
       ios: {
-        boxShadow: '0px 3px 6px rgba(0, 0, 0, 0.2)',
+        boxShadow: "0px 3px 6px rgba(0, 0, 0, 0.2)",
       },
       android: {
         elevation: 5,
       },
       default: {
-        boxShadow: '0px 3px 6px rgba(0, 0, 0, 0.2)',
+        boxShadow: "0px 3px 6px rgba(0, 0, 0, 0.2)",
       },
     }),
   },
@@ -875,9 +1084,9 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   closeButtonText: {
-    color: '#666',
+    color: "#666",
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   buttonText: {
     color: "#fff",
@@ -887,7 +1096,7 @@ const styles = StyleSheet.create({
   errorText: {
     color: "#ff3b30",
     fontSize: 14,
-    marginTop: 4,
+    marginBottom: 12,
   },
   successText: {
     color: "#34c759",
@@ -916,10 +1125,10 @@ const styles = StyleSheet.create({
   },
   bankModalTitle: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     marginBottom: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   searchInput: {
     height: 40,
@@ -1013,20 +1222,20 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   loginContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 20,
     gap: 8,
   },
   loginText: {
-    color: '#666',
+    color: "#666",
     fontSize: 16,
   },
   loginLink: {
-    color: '#2196F3',
+    color: "#2196F3",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   emailContainer: {
     marginBottom: 15,
@@ -1035,36 +1244,36 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   loginMethodContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     marginBottom: 20,
     gap: 10,
   },
   methodButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
     gap: 8,
   },
   methodButtonActive: {
-    backgroundColor: '#2196F3',
+    backgroundColor: "#2196F3",
   },
   methodButtonText: {
     fontSize: 16,
-    color: '#666',
-    fontWeight: '600',
+    color: "#666",
+    fontWeight: "600",
   },
   methodButtonTextActive: {
-    color: '#fff',
+    color: "#fff",
   },
   emailInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 15,
-    width: '100%',
+    width: "100%",
   },
   languageSelectorContainer: {
     marginBottom: 24,
@@ -1105,9 +1314,9 @@ const styles = StyleSheet.create({
     borderBottomColor: "#eee",
   },
   selectedBank: {
-    color: '#007AFF',
+    color: "#007AFF",
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   bankText: {
     fontSize: 16,
@@ -1130,10 +1339,10 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     marginBottom: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   backButton: {
     marginTop: 20,
@@ -1143,13 +1352,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     ...Platform.select({
       ios: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)',
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.25)",
       },
       android: {
         elevation: 3,
       },
       default: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)',
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.25)",
       },
     }),
   },
@@ -1157,5 +1366,51 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  languageButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: "#f5f5f5",
+    alignSelf: "flex-end",
+    marginBottom: 10,
+  },
+  languageButtonText: {
+    fontSize: 16,
+    color: "#333",
+    marginRight: 5,
+  },
+  linkContainer: {
+    marginTop: 10,
+    backgroundColor: "#f5f5f5",
+    borderRadius: 8,
+    padding: 10,
+  },
+  linkInput: {
+    backgroundColor: "#fff",
+    borderRadius: 4,
+    padding: 10,
+    marginBottom: 10,
+    minHeight: 60,
+    textAlignVertical: "top",
+  },
+  linkButtons: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+  },
+  linkButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 8,
+    minWidth: 100,
+    justifyContent: "center",
+  },
+  linkButtonText: {
+    marginLeft: 5,
+    color: "#007AFF",
+    fontSize: 16,
   },
 });

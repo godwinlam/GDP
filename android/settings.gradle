@@ -21,7 +21,7 @@ extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
   }
 }
 
-rootProject.name = 'Expo52Test'
+rootProject.name = 'gdpapp'
 
 dependencyResolutionManagement {
   versionCatalogs {

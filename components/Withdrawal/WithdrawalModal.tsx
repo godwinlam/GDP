@@ -42,13 +42,37 @@ interface Blockchain {
 const blockchains: Blockchain[] = [
   {
     id: "TRC-20",
-    name: "Tron (TRC-20)",
-    image: require("@/assets/images/TRC-20.jpg"),
+    name: "TRC-20",
+    image: require("@/assets/images/USDT-TRC20.png"),
+    symbol: "USDT",
+  },
+  {
+    id: "BEP-20",
+    name: "BEP-20",
+    image: require("@/assets/images/USDT-TRC20.png"),
+    symbol: "USDT",
+  },
+  {
+    id: "ERC-20",
+    name: "ERC-20",
+    image: require("@/assets/images/USDT-TRC20.png"),
     symbol: "USDT",
   },
   {
     id: "USDC",
-    name: "USDC",
+    name: "BEP-20",
+    image: require("@/assets/images/USDC.png"),
+    symbol: "USDC",
+  },
+  {
+    id: "USDC",
+    name: "ERC-20",
+    image: require("@/assets/images/USDC.png"),
+    symbol: "USDC",
+  },
+  {
+    id: "USDC",
+    name: "Solana",
     image: require("@/assets/images/USDC.png"),
     symbol: "USDC",
   },
@@ -57,6 +81,12 @@ const blockchains: Blockchain[] = [
     name: "Ethereum (ERC-20)",
     image: require("@/assets/images/ERC-20.jpg"),
     symbol: "USDT",
+  },
+  {
+    id: "BITCOIN",
+    name: "Bitcoin",
+    image: require("@/assets/images/bitcoin.png"),
+    symbol: "BTC",
   },
 ];
 
@@ -283,15 +313,15 @@ export default function WithdrawalModal({
               <MaterialCommunityIcons
                 name="arrow-left"
                 size={24}
-                color="#000"
+                color="black"
               />
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>
+            <Text style={styles.modalTitleTransfer}>
               {t.transfer} {t.to} {t.Wallet}
             </Text>
           </View>
 
-          <ScrollView style={styles.formContainer}>
+          <ScrollView showsVerticalScrollIndicator={false} style={styles.formContainer}>
             {/* Balance Display */}
             <View style={styles.balanceContainer}>
               <Text style={styles.balanceLabel}>
@@ -431,11 +461,16 @@ export default function WithdrawalModal({
                   onPress={() => setShowBlockchainModal(false)}
                   style={styles.closeButtonContainer}
                 >
-                  {/* <Text style={styles.closeButton}>×</Text> */}
+                  <MaterialCommunityIcons
+                name="window-close"
+                size={24}
+                color="red"
+                style={{marginLeft: 80}}
+              />
                 </TouchableOpacity>
               </View>
 
-              <ScrollView style={styles.blockchainList}>
+              <ScrollView showsVerticalScrollIndicator={false} style={styles.blockchainList}>
                 {blockchains.map((blockchain) => (
                   <TouchableOpacity
                     key={blockchain.id}
@@ -479,22 +514,29 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: "#fff",
     padding: 20,
   },
   modalHeader: {
-    flexDirection: "row",
+    flexDirection: 'row',
     alignItems: "center",
-    marginBottom: 20,
+    marginTop: 20,
+    marginBottom: 10,
   },
   closeButtonContainer: {
     padding: 5,
+  },
+  modalTitleTransfer:{
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#333",
+    marginLeft: 30,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: "600",
     color: "#333",
-    marginLeft: 15,
+    marginLeft: 30,
   },
   formContainer: {
     padding: 5,
@@ -608,8 +650,8 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    minHeight: "50%",
-    maxHeight: "80%",
+    minHeight: "80%",
+    maxHeight: "100%",
   },
   blockchainList: {
     padding: 20,
@@ -635,5 +677,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
     marginTop: 2,
+  }, 
+  closeButton: {
+   color: "red",
+   fontSize: 20,
+   fontWeight: "bold",
+   textAlign: "center",
   },
 });

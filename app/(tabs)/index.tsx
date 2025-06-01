@@ -311,7 +311,7 @@ const TabOneScreen: React.FC<TabOneScreenProps> = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
         <View style={styles.header}>
           <Text style={styles.welcomeText}>{t.welcomeBack}</Text>
 
@@ -352,9 +352,12 @@ const TabOneScreen: React.FC<TabOneScreenProps> = () => {
               <View style={styles.balanceTextContainer}>
                 <Text style={styles.balanceLabel}>{t.balance}</Text>
 
+               <View style={{flexDirection: "row"}}>
+                <Text style={styles.currencySymbol}>$</Text>
                 <Text style={styles.balanceAmount}>
                   {userBalance.toLocaleString()}
                 </Text>
+                </View>
               </View>
 
               {/* <View style={styles.gdpContainer}> */}
@@ -723,7 +726,7 @@ const styles = StyleSheet.create({
   },
   balanceLabel: {
     fontSize: 10,
-    color: "#94A3B8",
+    color: "green",
     marginBottom: 3,
     marginTop: 8,
     marginLeft: 20,
@@ -733,16 +736,17 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   currencySymbol: {
-    fontSize: 20,
+    fontSize: 12,
     color: "#1E293B",
-    marginRight: 4,
+    fontWeight: "bold",
     marginLeft: 20,
+    marginTop: 8,
+    marginRight: 5,
   },
   balanceAmount: {
     fontSize: 20,
     fontWeight: "bold",
     color: "#1E293B",
-    marginLeft: 20,
   },
   gdpAnimationContainer: {
     width: 150,
@@ -761,9 +765,9 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
   userNameText: {
-    fontSize: 16,
+    fontSize: 18,
     color: "blue",
-    fontWeight: "500",
+    fontWeight: "600",
   },
   scrollView: {
     flex: 1,

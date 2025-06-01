@@ -172,7 +172,6 @@ export default function InvestmentScreen({ user }: InvestmentScreenProps) {
   return (
     <View style={styles.container}>
       <View style={styles.balanceContainer}>
-        {/* <Text style={styles.balanceTitle}>{t.balance}</Text>  */}
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <View style={styles.bitcoinImageContainer}>
             <Image
@@ -264,7 +263,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 30,
     fontWeight: 'bold',
-    // marginTop: 8,
   },
   stakingList: {
     padding: 16,

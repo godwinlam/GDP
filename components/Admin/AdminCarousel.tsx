@@ -94,25 +94,44 @@ export default function AdminCarousel() {
 
   const uploadImage = async (uri: string) => {
     try {
-      const response = await fetch(uri);
-      const blob = await response.blob();
+      let response, blob;
+
+      // Handle both local and web platform cases
+      if (Platform.OS === 'web') {
+        // For web platform, convert base64 to blob
+        const base64Response = await fetch(uri);
+        blob = await base64Response.blob();
+      } else {
+        // For mobile platforms
+        response = await fetch(uri);
+        blob = await response.blob();
+      }
 
       const timestamp = Date.now();
-      const extension = uri.split(".").pop()?.toLowerCase() || "jpg";
-      const filename = `carousel/${timestamp}.${extension}`;
+      // Get file extension from uri or mime type
+      let extension = '';
+      if (uri.includes(';base64,')) {
+        // Handle base64 image
+        extension = uri.split(';')[0].split('/')[1] || 'jpg' || 'png';
+      } else {
+        extension = uri.split('.').pop()?.toLowerCase() || 'jpg' || 'png';
+      }
 
+      const filename = `carousel/${timestamp}.${extension}`;
       const storageRef = ref(storage, filename);
 
+      // Set appropriate content type
       const metadata = {
-        contentType: `image/${extension}`,
+        contentType: blob.type || `image/${extension}`,
       };
 
+      console.log('Uploading with metadata:', metadata);
       const snapshot = await uploadBytes(storageRef, blob, metadata);
-      console.log("Uploaded carousel image:", snapshot.ref.fullPath);
+      console.log('Uploaded carousel image:', snapshot.ref.fullPath);
 
       return await getDownloadURL(snapshot.ref);
     } catch (error) {
-      console.error("Error uploading image:", error);
+      console.error('Error uploading image:', error);
       throw error;
     }
   };

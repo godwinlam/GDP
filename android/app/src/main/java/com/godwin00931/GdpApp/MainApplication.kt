@@ -1,4 +1,4 @@
-package com.godwin00931.Expo52Test
+package com.godwin00931.GdpApp
 
 import android.app.Application
 import android.content.res.Configuration

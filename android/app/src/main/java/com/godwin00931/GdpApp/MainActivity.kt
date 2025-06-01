@@ -1,4 +1,4 @@
-package com.godwin00931.Expo52Test
+package com.godwin00931.GdpApp
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

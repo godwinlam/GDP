@@ -48,7 +48,7 @@ export default function TokenScreen() {
       try {
         const tokensRef = collection(db, 'tokens');
         const snapshot = await getDocs(tokensRef);
-        
+
         if (snapshot.empty) {
           // Initialize with default token if collection is empty
           const defaultToken = {
@@ -73,7 +73,7 @@ export default function TokenScreen() {
         setQuantity(initialQuantities);
       } catch (error) {
         console.error('Error fetching tokens:', error);
-       showAlert(t.error, t.tryAgain);
+        showAlert(t.error, t.tryAgain);
       }
     };
 
@@ -212,12 +212,19 @@ export default function TokenScreen() {
       <View style={styles.balanceContainer}>
         <View style={styles.balanceItem}>
           <Text style={styles.balanceTitle}>{t.balance}</Text>
-          <Text style={styles.balanceAmount}>{userBalance.toLocaleString()}</Text>
+
+          <View style={{ flexDirection: "row" }}>
+            <Text style={styles.currencySymbol}>$</Text>
+            <Text style={styles.balanceAmount}>{userBalance.toLocaleString()}</Text>
+          </View>
+
         </View>
+
         <View style={styles.balanceItem}>
           <Text style={styles.balanceTitle}>GDPCOIN</Text>
           <Text style={styles.balanceAmount}>{userTokens}</Text>
         </View>
+
       </View>
 
       <ScrollView style={styles.tokenList}>
@@ -231,7 +238,7 @@ export default function TokenScreen() {
               />
               <View style={styles.tokenHeaderInfo}>
                 <Text style={styles.tokenName}>{token.name}</Text>
-                <Text style={styles.tokenPrice}>{token.price.toFixed(3)}</Text>
+                <Text style={styles.tokenPrice}>$ {token.price.toFixed(3)}</Text>
               </View>
             </View>
 
@@ -265,7 +272,7 @@ export default function TokenScreen() {
               <View style={styles.totalSection}>
                 <Text style={styles.sectionLabel}>{t.total} {t.amount}</Text>
                 <Text style={styles.totalPrice}>
-                  {calculateTotalPrice(token).toFixed(3)}
+                  $ {calculateTotalPrice(token).toFixed(3)}
                 </Text>
               </View>
 
@@ -491,5 +498,13 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
+  },
+  currencySymbol: {
+    fontSize: 12,
+    color: "#fff",
+    fontWeight: "bold",
+    marginLeft: 20,
+    marginTop: 18,
+    marginRight: 5,
   },
 });

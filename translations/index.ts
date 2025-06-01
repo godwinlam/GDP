@@ -291,6 +291,12 @@ interface Translation {
   for_system_maintaining: string;
   will_also_deduct: string;
   your_friend_account_code: string;
+  local_currency: string;
+  shareRegistrationMessage: string;
+  linkCopied: string;
+  shareRegistrationLink: string;
+  copy: string;
+  share: string;
 
   // Allow other translations
   [key: string]: string;
@@ -614,6 +620,12 @@ const translations: { [key: string]: LanguageInfo } = {
       for_system_maintaining: "for system maintaining",
       will_also_deduct: "will also deduct",
       your_friend_account_code: "Your friend's account code",
+      local_currency: "Local Currency",
+      shareRegistrationMessage: "Share Registration",
+      linkCopied: "Link Copied",
+      shareRegistrationLink: "Share Registration Link",
+      copy: "Copy",
+      share: "Share",
     },
   },
   zh: {
@@ -723,7 +735,7 @@ const translations: { [key: string]: LanguageInfo } = {
       OTC: "场外交易",
       gdp: "GDP",
       activation: "金星运转激活",
-      GlobalDigitalOperationalPower: "全球金砖运转力量",
+      GlobalDigitalOperationalPower: "全球金星运转力量",
       EarnUpTo: "赚取",
       Returns: "收益",
       home: "首页",
@@ -916,6 +928,12 @@ const translations: { [key: string]: LanguageInfo } = {
       for_system_maintaining: "用于系统维护",
       will_also_deduct: "也会扣除",
       your_friend_account_code: "您的朋友账号代码",
+      local_currency: "本地货币",
+      shareRegistrationMessage: "分享注册",
+      linkCopied: "链接已复制",
+      shareRegistrationLink: "分享注册链接",
+      copy: "复制",
+      share: "分享",
     },
   },
   id: {
@@ -1236,6 +1254,12 @@ const translations: { [key: string]: LanguageInfo } = {
       for_system_maintaining: "untuk pemeliharaan sistem",
       will_also_deduct: "juga akan memotong",
       your_friend_account_code: "Kode akun teman Anda",
+      local_currency: "Mata uang lokal",
+      shareRegistrationMessage: "Bagikan Pendaftaran",
+      linkCopied: "Tautan Disalin",
+      shareRegistrationLink: "Bagikan Tautan Pendaftaran",
+      copy: "Salin",
+      share: "Bagikan",
     },
   },
   hi: {
@@ -1557,6 +1581,12 @@ const translations: { [key: string]: LanguageInfo } = {
       for_system_maintaining: "सिस्टम रखरखाव के लिए",
       will_also_deduct: "यह भी घटाएगा",
       your_friend_account_code: "आपके पास कोई भी नहीं है",
+      local_currency: "स्थानीय वित्त",
+      shareRegistrationMessage: "पंजीकरण साझा करें",
+      linkCopied: "लिंक कॉपी किया गया",
+      shareRegistrationLink: "पंजीकरण लिंक साझा करें",
+      copy: "कॉपी",
+      share: "शेयर",
     },
   },
   ru: {
@@ -1877,6 +1907,12 @@ const translations: { [key: string]: LanguageInfo } = {
       for_system_maintaining: "для обслуживания системы",
       will_also_deduct: "также вычтет",
       your_friend_account_code: "Ваш код аккаунта друга",
+      local_currency: "местная валюта",
+      shareRegistrationMessage: "Поделиться регистрацией",
+      linkCopied: "Ссылка скопирована",
+      shareRegistrationLink: "Поделиться ссылкой на регистрацию",
+      copy: "Копировать",
+      share: "Поделиться",
     },
   },
   ko: {
@@ -2196,6 +2232,12 @@ const translations: { [key: string]: LanguageInfo } = {
       for_system_maintaining: "시스템 유지보수를 위한",
       will_also_deduct: "또한 차감됩니다",
       your_friend_account_code: "당신의 친구의 계정 코드",
+      local_currency: "지역화폐",
+      shareRegistrationMessage: "등록 공유",
+      linkCopied: "링크 복사",
+      shareRegistrationLink: "등록 링크 공유",
+      copy: "복사",
+      share: "공유",
     },
   },
   ja: {
@@ -2513,6 +2555,12 @@ const translations: { [key: string]: LanguageInfo } = {
       for_system_maintaining: "システムメンテナンスのために",
       will_also_deduct: "また引き下げられます",
       your_friend_account_code: "あなたの友人のアカウントコード",
+      local_currency: "地方貨幣",
+      shareRegistrationMessage: "登録を共有",
+      linkCopied: "リンクをコピー",
+      shareRegistrationLink: "登録リンクを共有",
+      copy: "コピー",
+      share: "シェア",
     },
   },
   vi: {
@@ -2831,6 +2879,12 @@ const translations: { [key: string]: LanguageInfo } = {
       for_system_maintaining: "dành cho bảo trì hệ thống",
       will_also_deduct: "cũng sẽ trừ",
       your_friend_account_code: "Mã tài khoản bạn bè",
+      local_currency: "tiền tệ địa phương",
+      shareRegistrationMessage: "Chia sẻ đăng ký",
+      linkCopied: "Liên kết đã sao chép",
+      shareRegistrationLink: "Chia sẻ liên kết đăng ký",
+      copy: "Sao chép",
+      share: "Chia sẻ",
     },
   },
   th: {
@@ -3146,6 +3200,12 @@ const translations: { [key: string]: LanguageInfo } = {
       for_system_maintaining: "สำหรับการบำรุงรักษาระบบ",
       will_also_deduct: "จะหักอีก",
       your_friend_account_code: "รหัสบัญชีเพื่อนของคุณ",
+      local_currency: "สกุลเงินท้องถิ่น",
+      shareRegistrationMessage: "แชร์การลงทะเบียน",
+      linkCopied: "ลิงค์ถูกคัดลอก",
+      shareRegistrationLink: "แชร์ลิงค์การลงทะเบียน",
+      copy: "คัดลอก",
+      share: "แชร์",
     },
   },
 };

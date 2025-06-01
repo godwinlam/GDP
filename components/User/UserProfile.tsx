@@ -1,29 +1,27 @@
-import React, { useState, useEffect } from "react";
+import PinInput from "@/components/Transaction/PinInput";
+import { useAuth } from "@/context/auth";
+import { auth, db } from "@/firebase";
+import { useLanguage } from "@/hooks/useLanguage";
+import { countriesList } from "@/utils/countries";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
+  ActivityIndicator,
   Image,
   Modal,
   Platform,
-  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useAuth } from "@/context/auth";
-import { doc, getDoc, updateDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
-import { db, auth } from "@/firebase";
 import CountryFlag from "react-native-country-flag";
-import { countriesList } from "@/utils/countries";
-import { Ionicons } from "@expo/vector-icons";
-import { MaterialIcons } from '@expo/vector-icons';
-import { useRouter } from "expo-router";
-import { deleteUser, User as FirebaseUser } from "firebase/auth";
-import PinInput from "@/components/Transaction/PinInput";
-import { useLanguage } from '@/hooks/useLanguage';
-import showAlert from "../CustomAlert/ShowAlert";
 import SelectableText from "../Common/SelectableText";
+import showAlert from "../CustomAlert/ShowAlert";
 
 interface User {
   id: string;
@@ -56,24 +54,40 @@ export default function UserProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState<User | null>(null);
   const [showBankModal, setShowBankModal] = useState(false);
-  const [selectedBank, setSelectedBank] = useState<string>('');
-  const [otherBank, setOtherBank] = useState<string>('');
-  const [bankNumber, setBankNumber] = useState<string>('');
+  const [selectedBank, setSelectedBank] = useState<string>("");
+  const [otherBank, setOtherBank] = useState<string>("");
+  const [bankNumber, setBankNumber] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
-  const [digitalBankName, setDigitalBankName] = useState<string>('');
+  const [digitalBankName, setDigitalBankName] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
   const [showTransactionPassword, setShowTransactionPassword] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [showPinInput, setShowPinInput] = useState(false);
-  const [pin, setPin] = useState('');
+  const [pin, setPin] = useState("");
 
   const { t } = useLanguage();
 
   const banks: Bank[] = [
-    { id: 'alipay', name: t.alipay, image: require('@/assets/images/Alipay.png') },
-    { id: 'wechat', name: t.wechat, image: require('@/assets/images/WeChat_Pay.png') },
-    { id: 'tng', name: 'TNG', image: require('@/assets/images/TNG.png') },
-    { id: 'other', name: `${digitalBankName} Other`, image: null },
+    {
+      id: "alipay",
+      name: t.alipay,
+      image: require("@/assets/images/Alipay.png"),
+    },
+    {
+      id: "wechat",
+      name: t.wechat,
+      image: require("@/assets/images/WeChat_Pay.png"),
+    },
+    { id: "tng", name: "TNG", image: require("@/assets/images/TNG.png") },
+    { id: "gopay", name: "gopay", image: require("@/assets/images/gopay.png") },
+    { id: "MoMo", name: "MoMo", image: require("@/assets/images/MoMo.png") },
+    { id: "ZaloPay", name: "Zalo Pay", image: require("@/assets/images/ZaloPay.png") },
+    { id: "kakaoPay", name: "Kakao Pay", image: require("@/assets/images/KakaoPay.png") },
+    { id: "PayPay", name: "PayPay", image: require("@/assets/images/PayPay.png") },
+    { id: "TrueMoney", name: "TrueMoney", image: require("@/assets/images/truemoney_large_logo.jpg") },
+    { id: "paytm", name: "Paytm", image: require("@/assets/images/paytm.png") },
+    { id: "yooMoney", name: "YooMoney", image: require("@/assets/images/YooMoney.png") },
+    { id: "other", name: `${digitalBankName} Other`, image: null },
   ];
 
   useEffect(() => {
@@ -96,25 +110,25 @@ export default function UserProfileScreen() {
         console.log("User data:", userData); // Debug log
         setUser(userData);
         setEditedUser(userData);
-        setSelectedBank(userData.digitalBank || '');
-        setBankNumber(userData.bankNumber || '');
-        if (userData.digitalBank === 'other') {
-          setDigitalBankName(userData.digitalBankName || '');
+        setSelectedBank(userData.digitalBank || "");
+        setBankNumber(userData.bankNumber || "");
+        if (userData.digitalBank === "other") {
+          setDigitalBankName(userData.digitalBankName || "");
         }
       } else {
         // If no user document exists, create one with default values
         const defaultUserData: Partial<User> = {
-          email: authUser?.email || '',
-          username: authUser?.email?.split('@')[0] || '',
-          fullName: '',
-          phoneNumber: '',
-          country: '',
-          livingAddress: '',
-          bankName: '',
-          bankAccount: '',
-          digitalBank: '',
-          digitalBankName: '',
-          bankNumber: '',
+          email: authUser?.email || "",
+          username: authUser?.email?.split("@")[0] || "",
+          fullName: "",
+          phoneNumber: "",
+          country: "",
+          livingAddress: "",
+          bankName: "",
+          bankAccount: "",
+          digitalBank: "",
+          digitalBankName: "",
+          bankNumber: "",
         };
 
         const userRef = doc(db, "users", authUser!.uid);
@@ -130,7 +144,7 @@ export default function UserProfileScreen() {
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
-     showAlert(t.error, t.UserNotAuthenticated);
+      showAlert(t.error, t.UserNotAuthenticated);
     } finally {
       setIsLoading(false);
     }
@@ -157,8 +171,8 @@ export default function UserProfileScreen() {
           text: "OK",
           onPress: () => {
             router.replace("/(tabs)/profile");
-          }
-        }
+          },
+        },
       ]);
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -172,7 +186,10 @@ export default function UserProfileScreen() {
       const userRef = doc(db, "users", authUser.uid);
       await updateDoc(userRef, {
         digitalBank: selectedBank,
-        digitalBankName: selectedBank === 'other' ? digitalBankName : banks.find(b => b.id === selectedBank)?.name || '',
+        digitalBankName:
+          selectedBank === "other"
+            ? digitalBankName
+            : banks.find((b) => b.id === selectedBank)?.name || "",
         bankNumber: bankNumber,
         updatedAt: serverTimestamp(),
       });
@@ -183,8 +200,8 @@ export default function UserProfileScreen() {
           text: "OK",
           onPress: () => {
             router.replace("/(tabs)/profile");
-          }
-        }
+          },
+        },
       ]);
     } catch (error) {
       console.error("Error updating digital bank:", error);
@@ -198,7 +215,7 @@ export default function UserProfileScreen() {
       // Navigation will be handled by the auth state change
     } catch (error) {
       console.error("Error signing out:", error);
-     showAlert(t.error, `${t.logout} ${t.error}`);
+      showAlert(t.error, `${t.logout} ${t.error}`);
     }
   };
 
@@ -213,32 +230,46 @@ export default function UserProfileScreen() {
   };
 
   const renderField = (label: string, fieldName: keyof User) => {
-    const isReadOnlyField = [
-      'email',
-      'username',
-      'role',
-      'country',
-    ].includes(fieldName);
+    const value = getFieldValue(user, fieldName);
+    let displayValue = value;
+
+    // Special handling for email display
+    if (fieldName === "email" && value) {
+      if (!value.endsWith("@email2.com")) {
+        // For non-@email2.com emails, show as is
+        displayValue = value;
+      } else {
+        // For @email2.com emails, hide the domain
+        displayValue = value.replace("@email2.com", "");
+      }
+    }
+
+    // Check if field is read-only
+    const readOnlyFields = ["email", "username"];
+    const isReadOnly = readOnlyFields.includes(fieldName);
+
+    if (isEditing && !isReadOnly) {
+      return (
+        <View style={styles.fieldContainer}>
+          <Text style={styles.label}>{label}</Text>
+          <TextInput
+            style={[styles.input, isReadOnly && styles.readOnlyInput]}
+            value={getFieldValue(editedUser, fieldName)}
+            onChangeText={(text) =>
+              setEditedUser((prev) => ({ ...prev!, [fieldName]: text }))
+            }
+            placeholder={`Enter ${label.toLowerCase()}`}
+            placeholderTextColor="#666"
+            editable={!isReadOnly}
+          />
+        </View>
+      );
+    }
 
     return (
       <View style={styles.fieldContainer}>
-        <Text style={styles.label}>{label}:</Text>
-        {isEditing && !isReadOnlyField ? (
-          <TextInput
-            style={styles.input}
-            value={getFieldValue(editedUser, fieldName)}
-            onChangeText={(text) =>
-              setEditedUser((prev) =>
-                prev ? { ...prev, [fieldName]: text } : prev
-              )
-            }
-            editable={!isReadOnlyField}
-            placeholder={`Enter ${label.toLowerCase()}`}
-            placeholderTextColor="#666"
-          />
-        ) : (
-          <SelectableText text={getFieldValue(user, fieldName)} style={styles.value} />
-        )}
+        <Text style={styles.label}>{label}</Text>
+        <Text style={styles.value}>{displayValue}</Text>
       </View>
     );
   };
@@ -265,39 +296,56 @@ export default function UserProfileScreen() {
     if (!isEditing) {
       return (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t.digitalBank} {t.details}</Text>
+          <Text style={styles.sectionTitle}>
+            {t.digitalBank} {t.details}
+          </Text>
           <View style={styles.bankDetailsCard}>
             {user?.digitalBank ? (
               <>
                 <View style={styles.selectedBankRow}>
-                  {user.digitalBank === 'other' ? (
+                  {user.digitalBank === "other" ? (
                     <View style={styles.customBankDisplay}>
-                      <MaterialIcons name="account-balance" size={24} color="#4CAF50" />
-                      <Text style={styles.bankName}>{user.digitalBankName || `${t.other} ${t.bankName}`}</Text>
+                      <MaterialIcons
+                        name="account-balance"
+                        size={24}
+                        color="#4CAF50"
+                      />
+                      <Text style={styles.bankName}>
+                        {user.digitalBankName || `${t.other} ${t.bankName}`}
+                      </Text>
                     </View>
                   ) : (
                     <>
                       <Image
-                        source={banks.find(b => b.id === user.digitalBank)?.image}
+                        source={
+                          banks.find((b) => b.id === user.digitalBank)?.image
+                        }
                         style={styles.bankLogoLarge}
                       />
                       <View style={styles.bankInfoContainer}>
                         <Text style={styles.bankName}>
-                          {banks.find(b => b.id === user.digitalBank)?.name}
+                          {banks.find((b) => b.id === user.digitalBank)?.name}
                         </Text>
                       </View>
                     </>
                   )}
                 </View>
                 <View style={styles.accountNumberContainer}>
-                  <Text style={styles.inputLabel}>{t.account} {t.number}</Text>
-                  <SelectableText text={user.bankNumber || 'Not set'} style={styles.accountNumberText} />
+                  <Text style={styles.inputLabel}>
+                    {t.account} {t.number}
+                  </Text>
+                  <SelectableText
+                    text={user.bankNumber || "Not set"}
+                    style={styles.accountNumberText}
+                  />
                 </View>
               </>
             ) : (
               <View style={styles.noBankSelected}>
                 <MaterialIcons name="account-balance" size={40} color="#666" />
-                <Text style={styles.noBankText}>{t.no} {t.digitalBank} {t.Selected}</Text>
+                <Text style={styles.noBankText}>
+                  {t.no} {t.digitalBank} {t.Selected}
+                </Text>
               </View>
             )}
           </View>
@@ -307,27 +355,35 @@ export default function UserProfileScreen() {
 
     return (
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t.digitalBank} {t.details}</Text>
+        <Text style={styles.sectionTitle}>
+          {t.digitalBank} {t.details}
+        </Text>
         <TouchableOpacity
           style={styles.bankSelector}
           onPress={() => setShowBankModal(true)}
         >
           {selectedBank ? (
             <View style={styles.selectedBankRow}>
-              {selectedBank === 'other' ? (
+              {selectedBank === "other" ? (
                 <View style={styles.customBankDisplay}>
-                  <MaterialIcons name="account-balance" size={24} color="#4CAF50" />
-                  <Text style={styles.bankName}>{otherBank || `${t.other} ${t.bankName}`}</Text>
+                  <MaterialIcons
+                    name="account-balance"
+                    size={24}
+                    color="#4CAF50"
+                  />
+                  <Text style={styles.bankName}>
+                    {otherBank || `${t.other} ${t.bankName}`}
+                  </Text>
                 </View>
               ) : (
                 <>
                   <Image
-                    source={banks.find(b => b.id === selectedBank)?.image}
+                    source={banks.find((b) => b.id === selectedBank)?.image}
                     style={styles.bankLogoLarge}
                   />
                   <View style={styles.bankInfoContainer}>
                     <Text style={styles.bankName}>
-                      {banks.find(b => b.id === selectedBank)?.name}
+                      {banks.find((b) => b.id === selectedBank)?.name}
                     </Text>
                   </View>
                 </>
@@ -335,13 +391,19 @@ export default function UserProfileScreen() {
             </View>
           ) : (
             <View style={styles.selectBankPrompt}>
-              <MaterialIcons name="add-circle-outline" size={24} color="#4CAF50" />
-              <Text style={styles.selectBankText}>{t.select} {t.digitalBank}</Text>
+              <MaterialIcons
+                name="add-circle-outline"
+                size={24}
+                color="#4CAF50"
+              />
+              <Text style={styles.selectBankText}>
+                {t.select} {t.digitalBank}
+              </Text>
             </View>
           )}
         </TouchableOpacity>
 
-        {selectedBank === 'other' && (
+        {selectedBank === "other" && (
           <View style={styles.customBankInput}>
             <Text style={styles.inputLabel}>{t.bankName}</Text>
             <TextInput
@@ -355,7 +417,9 @@ export default function UserProfileScreen() {
         )}
 
         <View style={styles.accountNumberContainer}>
-          <Text style={styles.inputLabel}>{t.account} {t.number}</Text>
+          <Text style={styles.inputLabel}>
+            {t.account} {t.number}
+          </Text>
           <TextInput
             style={styles.input}
             placeholder={`${t.enter} ${t.account} ${t.number}`}
@@ -367,34 +431,16 @@ export default function UserProfileScreen() {
         </View>
       </View>
     );
-  }; 
+  };
 
   const renderPasswordField = () => {
-    if (!isEditing) {
-      return (
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>{t.password}</Text>
-          <Text style={styles.passwordText}>••••••••</Text>
-        </View>
-      );
-    }
-
     return (
       <View style={styles.fieldContainer}>
-        <Text style={styles.label}>{t.password}</Text>
+        <Text style={styles.label}>{t.login_password}</Text>
         <View style={styles.passwordContainer}>
-          <TextInput
-            style={[styles.input, styles.passwordInput]}
-            value={editedUser?.password || ""}
-            onChangeText={(text) =>
-              setEditedUser((prev) =>
-                prev ? { ...prev, password: text } : prev
-              )
-            }
-            secureTextEntry={!showPassword}
-            placeholder={`${t.enter} ${t.new} ${t.password}`}
-            placeholderTextColor="#666"
-          />
+          <Text style={[styles.passwordText, styles.readOnlyText]}>
+            {showPassword ? user?.password || "" : "••••••••"}
+          </Text>
           <TouchableOpacity
             style={styles.eyeIcon}
             onPress={() => setShowPassword(!showPassword)}
@@ -415,7 +461,25 @@ export default function UserProfileScreen() {
       return (
         <View style={styles.fieldContainer}>
           <Text style={styles.label}>{t.transactionPassword}</Text>
-          <Text style={styles.passwordText}>••••••••</Text>
+          <View style={styles.passwordContainer}>
+            <Text style={styles.passwordText}>
+              {showTransactionPassword
+                ? user?.transactionPassword || ""
+                : "••••••••"}
+            </Text>
+            <TouchableOpacity
+              style={styles.eyeIcon}
+              onPress={() =>
+                setShowTransactionPassword(!showTransactionPassword)
+              }
+            >
+              <Ionicons
+                name={showTransactionPassword ? "eye-off" : "eye"}
+                size={24}
+                color="#666"
+              />
+            </TouchableOpacity>
+          </View>
         </View>
       );
     }
@@ -454,12 +518,11 @@ export default function UserProfileScreen() {
   const renderAdminButton = () => {
     if (user?.role === "admin") {
       return (
-        <TouchableOpacity
-          style={styles.adminButton}
-          onPress={handleAdminPanel}
-        >
+        <TouchableOpacity style={styles.adminButton} onPress={handleAdminPanel}>
           <Ionicons name="settings" size={24} color="white" />
-          <Text style={styles.adminButtonText}>{t.admin} {t.panel}</Text>
+          <Text style={styles.adminButtonText}>
+            {t.admin} {t.panel}
+          </Text>
         </TouchableOpacity>
       );
     }
@@ -475,78 +538,90 @@ export default function UserProfileScreen() {
     >
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>{t.update} {t.bank} {t.information}</Text>
+          <Text style={styles.modalTitle}>
+            {t.update} {t.bank} {t.information}
+          </Text>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <View style={styles.bankSection}>
+              <Text style={styles.sectionTitle}>{t.digitalBank}</Text>
+              <View style={styles.bankOptionsContainer}>
+                {banks.map((bank) => (
+                  <TouchableOpacity
+                    key={bank.id}
+                    style={[
+                      styles.bankOption,
+                      selectedBank === bank.id && styles.selectedBankOption,
+                    ]}
+                    onPress={() => setSelectedBank(bank.id)}
+                  >
+                    {bank.id === "other" ? (
+                      <MaterialIcons
+                        name="account-balance"
+                        size={32}
+                        color="#4CAF50"
+                      />
+                    ) : (
+                      <Image source={bank.image} style={styles.bankLogo} />
+                    )}
+                    <Text style={styles.bankOptionText}>
+                      {bank.id === "other" ? "Custom Bank" : bank.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
 
-          <View style={styles.bankSection}>
-            <Text style={styles.sectionTitle}>{t.digitalBank}</Text>
-            <View style={styles.bankOptionsContainer}>
-              {banks.map((bank) => (
-                <TouchableOpacity
-                  key={bank.id}
-                  style={[
-                    styles.bankOption,
-                    selectedBank === bank.id && styles.selectedBankOption
-                  ]}
-                  onPress={() => setSelectedBank(bank.id)}
-                >
-                  {bank.id === 'other' ? (
-                    <MaterialIcons name="account-balance" size={32} color="#4CAF50" />
-                  ) : (
-                    <Image
-                      source={bank.image}
-                      style={styles.bankLogo}
-                    />
-                  )}
-                  <Text style={styles.bankOptionText}>
-                    {bank.id === 'other' ? 'Custom Bank' : bank.name}
+              {selectedBank === "other" && (
+                <View style={styles.customBankInput}>
+                  <Text style={styles.inputLabel}>
+                    {t.other} {t.bankName}
                   </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+                  <TextInput
+                    style={styles.input}
+                    placeholder={`${t.enter} ${t.other} ${t.bankName}`}
+                    value={digitalBankName}
+                    onChangeText={setDigitalBankName}
+                    placeholderTextColor="#666"
+                  />
+                </View>
+              )}
 
-            {selectedBank === 'other' && (
-              <View style={styles.customBankInput}>
-                <Text style={styles.inputLabel}>{t.other} {t.bankName}</Text>
+              <View style={styles.accountNumberContainer}>
+                <Text style={styles.inputLabel}>
+                  {t.bank} {t.account} {t.number}
+                </Text>
                 <TextInput
                   style={styles.input}
-                  placeholder={`${t.enter} ${t.other} ${t.bankName}`}
-                  value={digitalBankName}
-                  onChangeText={setDigitalBankName}
+                  placeholder={`${t.enter} ${t.bank} ${t.account} ${t.number}`}
+                  value={bankNumber}
+                  onChangeText={setBankNumber}
                   placeholderTextColor="#666"
                 />
               </View>
-            )}
 
-            <View style={styles.accountNumberContainer}>
-              <Text style={styles.inputLabel}>{t.bank} {t.account} {t.number}</Text>
-              <TextInput
-                style={styles.input}
-                placeholder={`${t.enter} ${t.bank} ${t.account} ${t.number}`}
-                value={bankNumber}
-                onChangeText={setBankNumber}
-                placeholderTextColor="#666"
-              />
+              <TouchableOpacity
+                style={[
+                  styles.actionButton,
+                  styles.saveDigitalButton,
+                  selectedBank === "other" &&
+                    !digitalBankName &&
+                    styles.disabledButton,
+                ]}
+                onPress={handleSaveDigitalBank}
+                disabled={selectedBank === "other" && !digitalBankName}
+              >
+                <Text style={styles.actionButtonText}>
+                  {t.save} {t.digitalBank}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.actionButton, styles.cancelButton]}
+                onPress={() => setShowBankModal(false)}
+              >
+                <Text style={styles.actionButtonText}>{t.cancel}</Text>
+              </TouchableOpacity>
             </View>
-
-            <TouchableOpacity
-              style={[
-                styles.actionButton,
-                styles.saveDigitalButton,
-                (selectedBank === 'other' && !digitalBankName) && styles.disabledButton
-              ]}
-              onPress={handleSaveDigitalBank}
-              disabled={selectedBank === 'other' && !digitalBankName}
-            >
-              <Text style={styles.actionButtonText}>{t.save} {t.digitalBank}</Text>
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity
-            style={[styles.actionButton, styles.cancelButton]}
-            onPress={() => setShowBankModal(false)}
-          >
-            <Text style={styles.actionButtonText}>{t.cancel}</Text>
-          </TouchableOpacity>
+          </ScrollView>
         </View>
       </View>
     </Modal>
@@ -554,7 +629,7 @@ export default function UserProfileScreen() {
 
   const handleDeleteAccount = async () => {
     if (!user) return;
-    
+
     setShowPinInput(true);
   };
 
@@ -562,35 +637,29 @@ export default function UserProfileScreen() {
     if (!user || !authUser) return;
 
     if (pin !== user.transactionPassword) {
-     showAlert(t.error, `${t.invalidTransactionPassword}. ${t.tryAgain}`);
-      setPin('');
+      showAlert(t.error, `${t.invalidTransactionPassword}. ${t.tryAgain}`);
+      setPin("");
       return;
     }
 
     setIsDeletingAccount(true);
     try {
-      // Delete user document from Firestore
-      await deleteDoc(doc(db, 'users', user.id));
-
       // Delete user from Firebase Auth
-      const currentUser = auth.currentUser as FirebaseUser;
+      const currentUser = auth.currentUser;
       if (currentUser) {
-        await deleteUser(currentUser);
+        await currentUser.delete();
       }
 
       // Sign out and redirect to login
       await signOut();
-      router.replace('/(auth)/login');
+      router.replace("/(auth)/login");
     } catch (error) {
-      console.error('Error deleting account:', error);
-      showAlert(
-        t.error,
-        `${t.error} ${t.tryAgain}`
-      );
+      console.error("Error deleting account:", error);
+      showAlert(t.error, `${t.error} ${t.tryAgain}`);
     } finally {
       setIsDeletingAccount(false);
       setShowPinInput(false);
-      setPin('');
+      setPin("");
     }
   };
 
@@ -605,23 +674,29 @@ export default function UserProfileScreen() {
   if (!user || !editedUser) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>{t.user} {t.notFound}</Text>
+        <Text style={styles.title}>
+          {t.user} {t.notFound}
+        </Text>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>{t.profile} {t.settings}</Text>
+          <Text style={styles.title}>
+            {t.profile} {t.settings}
+          </Text>
           <View style={styles.buttonContainer}>
             {!isEditing ? (
               <TouchableOpacity
                 style={styles.editButton}
                 onPress={() => setIsEditing(true)}
               >
-                <Text style={styles.buttonText}>{t.edit} {t.profile}</Text>
+                <Text style={styles.buttonText}>
+                  {t.edit} {t.profile}
+                </Text>
               </TouchableOpacity>
             ) : (
               <>
@@ -630,10 +705,10 @@ export default function UserProfileScreen() {
                   onPress={() => {
                     setIsEditing(false);
                     setEditedUser(user);
-                    setSelectedBank(user.digitalBank || '');
-                    setBankNumber(user.bankNumber || '');
-                    if (user.digitalBank === 'other') {
-                      setOtherBank(user.bankName || '');
+                    setSelectedBank(user.digitalBank || "");
+                    setBankNumber(user.bankNumber || "");
+                    if (user.digitalBank === "other") {
+                      setOtherBank(user.bankName || "");
                     }
                   }}
                 >
@@ -650,7 +725,7 @@ export default function UserProfileScreen() {
           </View>
         </View>
 
-        {renderField(t.email, "email")}
+        {renderField(`${t.email} / ${t.phoneNumber}`, "email")}
         {renderField(t.username, "username")}
         {renderField(t.fullName, "fullName")}
         {renderCountryItem()}
@@ -669,7 +744,10 @@ export default function UserProfileScreen() {
 
         <View style={styles.deleteAccountContainer}>
           <TouchableOpacity
-            style={[styles.deleteButton, isDeletingAccount && styles.buttonDisabled]}
+            style={[
+              styles.deleteButton,
+              isDeletingAccount && styles.buttonDisabled,
+            ]}
             onPress={handleDeleteAccount}
             disabled={isDeletingAccount}
           >
@@ -677,8 +755,14 @@ export default function UserProfileScreen() {
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <>
-                <MaterialIcons name="delete-forever" size={24} color="#FFFFFF" />
-                <Text style={styles.deleteButtonText}>{t.delete} {t.account}</Text>
+                <MaterialIcons
+                  name="delete-forever"
+                  size={24}
+                  color="#FFFFFF"
+                />
+                <Text style={styles.deleteButtonText}>
+                  {t.delete} {t.account}
+                </Text>
               </>
             )}
           </TouchableOpacity>
@@ -690,13 +774,13 @@ export default function UserProfileScreen() {
           onChange={setPin}
           onClose={() => {
             setShowPinInput(false);
-            setPin('');
+            setPin("");
           }}
           onConfirm={handlePinConfirm}
           title={`${t.verify} ${t.transactionPassword}`}
         />
 
-        {user.role === 'admin' && renderAdminButton()}
+        {user.role === "admin" && renderAdminButton()}
       </View>
     </ScrollView>
   );
@@ -705,59 +789,59 @@ export default function UserProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
     padding: 16,
   },
   scrollContainer: {
     flexGrow: 1,
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 24,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 16,
-    color: '#333',
+    color: "#333",
   },
   fieldContainer: {
     marginBottom: 16,
   },
   label: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 8,
-    color: '#666',
+    color: "#666",
   },
   input: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
   },
   value: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
     paddingVertical: 12,
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 24,
     marginBottom: 16,
   },
   editButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: "#2196F3",
     padding: 12,
     borderRadius: 8,
     flex: 1,
     marginRight: 8,
   },
   saveButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
     padding: 12,
     borderRadius: 8,
     flex: 1,
@@ -766,188 +850,188 @@ const styles = StyleSheet.create({
   button: {
     padding: 12,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   buttonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
   section: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     ...Platform.select({
       ios: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
       },
       android: {
         elevation: 3,
       },
       default: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
       },
     }),
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     marginBottom: 12,
   },
   bankSection: {
     marginBottom: 24,
     padding: 16,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: "#f8f8f8",
     borderRadius: 12,
   },
   bankOptionsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
     marginBottom: 16,
   },
   bankOption: {
-    width: '48%',
-    backgroundColor: '#f5f5f5',
+    width: "48%",
+    backgroundColor: "#f5f5f5",
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: "transparent",
     ...Platform.select({
       ios: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
       },
       android: {
         elevation: 2,
       },
       default: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
       },
     }),
   },
   selectedBankOption: {
-    borderColor: '#4CAF50',
-    backgroundColor: '#E8F5E9',
+    borderColor: "#4CAF50",
+    backgroundColor: "#E8F5E9",
   },
   bankLogo: {
     width: 60,
     height: 60,
-    resizeMode: 'contain',
+    resizeMode: "contain",
     marginBottom: 8,
   },
   bankOptionText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    textAlign: 'center',
+    fontWeight: "600",
+    color: "#333",
+    textAlign: "center",
     marginTop: 8,
   },
   actionButton: {
     padding: 12,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginTop: 12,
   },
   actionButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
   saveDigitalButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
   },
   saveBankButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: "#2196F3",
   },
   cancelButton: {
-    backgroundColor: '#757575',
+    backgroundColor: "red",
   },
   logoutButton: {
-    backgroundColor: '#f44336',
+    backgroundColor: "#f44336",
     padding: 12,
     borderRadius: 8,
     marginTop: 24,
   },
   logoutText: {
-    color: 'white',
-    textAlign: 'center',
+    color: "white",
+    textAlign: "center",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 16,
     padding: 24,
-    width: '90%',
+    width: "90%",
     maxWidth: 400,
-    maxHeight: '80%',
+    maxHeight: "100%",
     ...Platform.select({
       ios: {
-        boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.15)',
+        boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.15)",
       },
       android: {
         elevation: 5,
       },
       default: {
-        boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.15)',
+        boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.15)",
       },
     }),
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 16,
-    textAlign: 'center',
-    color: '#333',
+    textAlign: "center",
+    color: "#333",
   },
   countryContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'white',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "white",
     borderRadius: 8,
     padding: 12,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
   },
   countryText: {
     marginLeft: 8,
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   bankDetailsCard: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: "#e0e0e0",
   },
   selectedBankRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   bankLogoLarge: {
     width: 80,
     height: 80,
-    resizeMode: 'contain',
+    resizeMode: "contain",
     marginRight: 12,
   },
   bankInfoContainer: {
@@ -955,12 +1039,12 @@ const styles = StyleSheet.create({
   },
   bankName: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
   },
   customBankDisplay: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
   },
   accountNumberContainer: {
@@ -968,35 +1052,35 @@ const styles = StyleSheet.create({
   },
   accountNumberText: {
     fontSize: 16,
-    color: '#333',
-    backgroundColor: '#f5f5f5',
+    color: "#333",
+    backgroundColor: "#f5f5f5",
     padding: 12,
     borderRadius: 8,
   },
   noBankSelected: {
-    alignItems: 'center',
+    alignItems: "center",
     padding: 20,
   },
   noBankText: {
-    color: '#666',
+    color: "#666",
     fontSize: 16,
     marginTop: 8,
   },
   bankSelector: {
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: "#e0e0e0",
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
   },
   selectBankPrompt: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 8,
   },
   selectBankText: {
-    color: '#4CAF50',
+    color: "#4CAF50",
     fontSize: 16,
   },
   customBankInput: {
@@ -1004,7 +1088,7 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginBottom: 8,
   },
   bottomSpacing: {
@@ -1015,78 +1099,80 @@ const styles = StyleSheet.create({
   },
   passwordText: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
     paddingVertical: 12,
+    flex: 1,
+    paddingRight: 40,
   },
   adminButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#673AB7',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#673AB7",
     padding: 12,
     borderRadius: 8,
     marginTop: 16,
     ...Platform.select({
       ios: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.2)",
       },
       android: {
         elevation: 4,
       },
       default: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.2)",
       },
     }),
   },
   adminButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginLeft: 8,
   },
   disabledButton: {
     opacity: 0.5,
   },
   passwordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    position: 'relative',
+    flexDirection: "row",
+    alignItems: "center",
+    position: "relative",
   },
   passwordInput: {
     flex: 1,
     paddingRight: 50, // Make room for the eye icon
   },
   eyeIcon: {
-    position: 'absolute',
+    position: "absolute",
     right: 12,
     padding: 4,
   },
   selectableText: {
     margin: 0,
     padding: 0,
-    backgroundColor: 'transparent',
-    color: '#333',
+    backgroundColor: "transparent",
+    color: "#333",
     minHeight: 20,
     ...Platform.select({
       ios: {
         height: undefined,
       },
       android: {
-        textAlignVertical: 'center',
+        textAlignVertical: "center",
         paddingVertical: 0,
       },
     }),
   },
   selectionToolbar: {
-    position: 'absolute',
+    position: "absolute",
     top: -48,
     left: 0,
     right: 0,
     height: 44,
-    backgroundColor: 'white',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "white",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     elevation: 4,
     borderRadius: 4,
   },
@@ -1095,9 +1181,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   toolbarButtonText: {
-    color: '#2196F3',
+    color: "#2196F3",
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   deleteAccountContainer: {
     marginTop: 30,
@@ -1105,21 +1191,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   deleteButton: {
-    backgroundColor: '#FF3B30',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#FF3B30",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 15,
     borderRadius: 8,
     marginTop: 10,
   },
   deleteButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginLeft: 8,
   },
   buttonDisabled: {
     opacity: 0.5,
+  },
+  readOnlyInput: {
+    backgroundColor: "#f5f5f5",
+    color: "#666",
+  },
+  readOnlyText: {
+    color: "#666",
   },
 });

@@ -260,6 +260,12 @@ export default function OTCListingModal({
       </View>
     );
   };
+  
+  const handleAmountChange = (text: string) => {
+    // Only allow digits
+    const digitsOnly = text.replace(/[^0-9]/g, "");
+    setSellingPrice(digitsOnly);
+  };
 
   const renderListingDetails = () => {
     return (
@@ -272,11 +278,11 @@ export default function OTCListingModal({
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>{t.selling} {t.price} (USD)</Text>
+            <Text style={styles.label}>{t.selling} {t.price} ({t.local_currency})</Text>
             <TextInput
               style={styles.input}
               value={sellingPrice}
-              onChangeText={setSellingPrice}
+              onChangeText={handleAmountChange}
               keyboardType="numeric"
               placeholder={`${t.enter} ${t.selling} ${t.price}`}
             />

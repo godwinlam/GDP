@@ -163,7 +163,7 @@ export default function ConvertGDPModal({
           <Text style={styles.title}>GDP {t.convert_to} USD</Text>
           <Text style={styles.description}>
             {/* {t.convert_to} {animationFile.replace('.json', '')} to {gdpPrice.toFixed(2)} USD? */}
-            {t.convert_to} {gdpPrice.toFixed(2)} USD
+            {t.convert_to} {gdpPrice.toFixed(2)} ($)
 
           </Text>
           <Text style={styles.quantity}>
