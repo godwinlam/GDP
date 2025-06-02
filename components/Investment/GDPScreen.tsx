@@ -534,12 +534,12 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
-    color: "blue",
+    color: "#2196F3",
   },
   balance: {
     fontSize: 18,
     marginBottom: 10,
-    color: "blue",
+    color: "#2196F3",
   },
   instruction: {
     fontSize: 16,

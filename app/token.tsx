@@ -69,7 +69,7 @@ export default function TokenScreen() {
             id: "1",
             name: "GDPCOIN",
             // image: require('@/assets/images/GDPCoin01.png'),
-            price: 1,
+            price: 0,
           };
           setTokens([defaultToken]);
         } else {
@@ -82,7 +82,7 @@ export default function TokenScreen() {
 
         const initialQuantities: Record<string, number> = {};
         tokens.forEach((token) => {
-          initialQuantities[token.id] = 1;
+          initialQuantities[token.id] = 0;
         });
         setQuantity(initialQuantities);
       } catch (error) {
@@ -97,12 +97,12 @@ export default function TokenScreen() {
 
   const handleQuantityChange = (tokenId: string, change: number) => {
     setQuantity((prev) => {
-      const currentValue = prev[tokenId] || 1;
+      const currentValue = prev[tokenId] || 0;
       const newValue = currentValue + change;
       // Only allow positive numbers
       return {
         ...prev,
-        [tokenId]: Math.max(1, newValue),
+        [tokenId]: Math.max(0, newValue),
       };
     });
   };
@@ -123,16 +123,16 @@ export default function TokenScreen() {
     // Parse as integer
     const numValue = parseInt(cleanValue);
 
-    // Update the value, ensuring it's at least 1
+    // Update the value, ensuring it's at least 0
     setQuantity((prev) => ({
       ...prev,
-      [tokenId]: numValue || 1,
+      [tokenId]: numValue || 0,
     }));
   };
 
   const calculateTotalPrice = (token: Token) => {
     const qty = quantity[token.id];
-    return token.price * (typeof qty === "number" ? qty : 1);
+    return token.price * (typeof qty === "number" ? qty : 0);
   };
 
   const handlePurchase = async (token: Token) => {
@@ -156,7 +156,7 @@ export default function TokenScreen() {
       return;
     }
 
-    const tokenQuantity = quantity[token.id] || 1;
+    const tokenQuantity = quantity[token.id] || 0;
     if (userTokens < tokenQuantity) {
       showAlert(t.error, `${t.insufficient} GDPCOIN`);
       return;
@@ -184,7 +184,7 @@ export default function TokenScreen() {
         return;
       }
 
-      const tokenQuantity = quantity[selectedToken.id] || 1;
+      const tokenQuantity = quantity[selectedToken.id] || 0;
       const totalPrice = calculateTotalPrice(selectedToken);
 
       if (isSelling) {
@@ -305,14 +305,14 @@ export default function TokenScreen() {
                     value={
                       quantity[token.id] === ""
                         ? ""
-                        : String(quantity[token.id] || 1)
+                        : String(quantity[token.id] || "")
                     }
                     onChangeText={(value) =>
                       handleQuantityInput(token.id, value)
                     }
                     keyboardType="numeric"
                     maxLength={100}
-                    placeholder="1"
+                    placeholder=""
                     textAlign="center"
                   />
                   <TouchableOpacity
@@ -335,14 +335,26 @@ export default function TokenScreen() {
 
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
-                  style={[styles.actionButton, styles.buyButton]}
+                  style={[
+                    styles.actionButton,
+                    styles.buyButton,
+                    (!quantity[token.id] || quantity[token.id] === 0) &&
+                      styles.disabledButton,
+                  ]}
                   onPress={() => handlePurchase(token)}
+                  disabled={!quantity[token.id] || quantity[token.id] === 0}
                 >
                   <Text style={styles.actionButtonText}>{t.Purchase}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.actionButton, styles.sellButton]}
+                  style={[
+                    styles.actionButton,
+                    styles.sellButton,
+                    (!quantity[token.id] || quantity[token.id] === 0) &&
+                      styles.disabledButton,
+                  ]}
                   onPress={() => handleSell(token)}
+                  disabled={!quantity[token.id] || quantity[token.id] === 0}
                 >
                   <Text style={styles.actionButtonText}>{t.Sell}</Text>
                 </TouchableOpacity>
@@ -538,6 +550,10 @@ const styles = StyleSheet.create({
   },
   sellButton: {
     backgroundColor: "#FF5252",
+  },
+  disabledButton: {
+    backgroundColor: "#ccc",
+    opacity: 0.7,
   },
   actionButtonText: {
     color: "#fff",
