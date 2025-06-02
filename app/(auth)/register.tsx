@@ -163,7 +163,7 @@ export default function RegisterScreen() {
   const [showTransactionPassword, setShowTransactionPassword] = useState(false);
   const [showShareLink, setShowShareLink] = useState(false);
   const registrationLink = `${
-    process.env.EXPO_PUBLIC_APP_URL || "http://localhost:8081"
+    process.env.EXPO_PUBLIC_APP_URL || "https://gdp.it.com"
   }/register?referralCode=${params.referralCode || ""}&group=${
     params.group || ""
   }&isAddingUser=true`;
@@ -493,7 +493,7 @@ export default function RegisterScreen() {
                 group === "A" && styles.groupButtonTextSelected,
               ]}
             >
-              {t.group} {group === "A" ? `(${t.Selected})` : ""}
+              {t.group} A {group === "A" ? `(${t.Selected})` : ""}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -510,7 +510,7 @@ export default function RegisterScreen() {
                 group === "B" && styles.groupButtonTextSelected,
               ]}
             >
-              {t.group} {group === "B" ? `(${t.Selected})` : ""}
+              {t.group} B {group === "B" ? `(${t.Selected})` : ""}
             </Text>
           </TouchableOpacity>
         </View>
