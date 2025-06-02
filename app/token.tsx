@@ -1,15 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform, TextInput } from 'react-native';
-import { router, Stack } from 'expo-router';
-import { useAuth } from '../context/auth';
-import { getFirestore, collection, getDocs, doc, updateDoc, getDoc } from 'firebase/firestore';
-import { User } from '../types/user';
-import { AntDesign } from '@expo/vector-icons';
-import PinInput from '@/components/Transaction/PinInput';
-import translations from '@/translations';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import showAlert from '@/components/CustomAlert/ShowAlert';
-import { useLanguage } from '@/hooks/useLanguage';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Platform,
+  TextInput,
+} from "react-native";
+import { router, Stack } from "expo-router";
+import { useAuth } from "../context/auth";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+  getDoc,
+} from "firebase/firestore";
+import { User } from "../types/user";
+import { AntDesign } from "@expo/vector-icons";
+import PinInput from "@/components/Transaction/PinInput";
+import showAlert from "@/components/CustomAlert/ShowAlert";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface Token {
   id: string;
@@ -23,9 +37,9 @@ export default function TokenScreen() {
   const [userBalance, setUserBalance] = useState(0);
   const [userTokens, setUserTokens] = useState(0);
   const [selectedToken, setSelectedToken] = useState<Token | null>(null);
-  const [quantity, setQuantity] = useState<Record<string, number>>({});
+  const [quantity, setQuantity] = useState<Record<string, number | "">>({});
   const [showPinInput, setShowPinInput] = useState(false);
-  const [pin, setPin] = useState('');
+  const [pin, setPin] = useState("");
   const [isSelling, setIsSelling] = useState(false);
   const { user } = useAuth();
   const db = getFirestore();
@@ -35,7 +49,7 @@ export default function TokenScreen() {
   useEffect(() => {
     const fetchUserData = async () => {
       if (user?.uid) {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data() as User;
           setUserBalance(userData.balance || 0);
@@ -46,20 +60,20 @@ export default function TokenScreen() {
 
     const fetchTokens = async () => {
       try {
-        const tokensRef = collection(db, 'tokens');
+        const tokensRef = collection(db, "tokens");
         const snapshot = await getDocs(tokensRef);
 
         if (snapshot.empty) {
           // Initialize with default token if collection is empty
           const defaultToken = {
-            id: '1',
-            name: 'GDPCOIN',
+            id: "1",
+            name: "GDPCOIN",
             // image: require('@/assets/images/GDPCoin01.png'),
             price: 1,
           };
           setTokens([defaultToken]);
         } else {
-          const fetchedTokens = snapshot.docs.map(doc => ({
+          const fetchedTokens = snapshot.docs.map((doc) => ({
             ...doc.data(),
             id: doc.id,
           })) as Token[];
@@ -67,12 +81,12 @@ export default function TokenScreen() {
         }
 
         const initialQuantities: Record<string, number> = {};
-        tokens.forEach(token => {
+        tokens.forEach((token) => {
           initialQuantities[token.id] = 1;
         });
         setQuantity(initialQuantities);
       } catch (error) {
-        console.error('Error fetching tokens:', error);
+        console.error("Error fetching tokens:", error);
         showAlert(t.error, t.tryAgain);
       }
     };
@@ -82,22 +96,43 @@ export default function TokenScreen() {
   }, [user?.uid]);
 
   const handleQuantityChange = (tokenId: string, change: number) => {
-    setQuantity(prev => ({
-      ...prev,
-      [tokenId]: Math.max(1, (prev[tokenId] || 1) + change)
-    }));
+    setQuantity((prev) => {
+      const currentValue = prev[tokenId] || 1;
+      const newValue = currentValue + change;
+      // Only allow positive numbers
+      return {
+        ...prev,
+        [tokenId]: Math.max(1, newValue),
+      };
+    });
   };
 
   const handleQuantityInput = (tokenId: string, value: string) => {
-    const numValue = parseInt(value) || 1;
-    setQuantity(prev => ({
+    // Remove any non-numeric characters
+    const cleanValue = value.replace(/[^0-9]/g, "");
+
+    // If the input is empty, set it to empty string
+    if (!cleanValue) {
+      setQuantity((prev) => ({
+        ...prev,
+        [tokenId]: "" as const,
+      }));
+      return;
+    }
+
+    // Parse as integer
+    const numValue = parseInt(cleanValue);
+
+    // Update the value, ensuring it's at least 1
+    setQuantity((prev) => ({
       ...prev,
-      [tokenId]: Math.max(1, Math.min(numValue, 999)) // Limit between 1 and 999
+      [tokenId]: numValue || 1,
     }));
   };
 
   const calculateTotalPrice = (token: Token) => {
-    return token.price * (quantity[token.id] || 1);
+    const qty = quantity[token.id];
+    return token.price * (typeof qty === "number" ? qty : 1);
   };
 
   const handlePurchase = async (token: Token) => {
@@ -136,7 +171,7 @@ export default function TokenScreen() {
     if (!selectedToken || !user?.uid) return;
 
     try {
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      const userDoc = await getDoc(doc(db, "users", user.uid));
       if (!userDoc.exists()) {
         showAlert(t.error, `${t.user} ${t.notFound}`);
         return;
@@ -145,7 +180,7 @@ export default function TokenScreen() {
       const userData = userDoc.data() as User;
       if (pin !== userData.transactionPassword) {
         showAlert(t.error, `${t.transactionPassword} ${t.error}`);
-        setPin('');
+        setPin("");
         return;
       }
 
@@ -158,7 +193,7 @@ export default function TokenScreen() {
           return;
         }
 
-        const userRef = doc(db, 'users', user.uid);
+        const userRef = doc(db, "users", user.uid);
         const newBalance = userBalance + totalPrice;
         const newTokens = userTokens - tokenQuantity;
 
@@ -169,14 +204,17 @@ export default function TokenScreen() {
 
         setUserBalance(newBalance);
         setUserTokens(newTokens);
-        showAlert(t.success, `${t.success} ${t.sold} ${tokenQuantity} ${selectedToken.name} GDPCOIN`);
+        showAlert(
+          t.success,
+          `${t.success} ${t.sold} ${tokenQuantity} ${selectedToken.name} GDPCOIN`
+        );
       } else {
         if (userBalance < totalPrice) {
           showAlert(t.error, t.insufficientBalance);
           return;
         }
 
-        const userRef = doc(db, 'users', user.uid);
+        const userRef = doc(db, "users", user.uid);
         const newBalance = userBalance - totalPrice;
         const newTokens = userTokens + tokenQuantity;
 
@@ -187,14 +225,22 @@ export default function TokenScreen() {
 
         setUserBalance(newBalance);
         setUserTokens(newTokens);
-        showAlert(t.success, `${t.success} ${t.purchased} ${tokenQuantity} ${selectedToken.name} GDPCOIN`);
+        showAlert(
+          t.success,
+          `${t.success} ${t.purchased} ${tokenQuantity} ${selectedToken.name} GDPCOIN`
+        );
       }
     } catch (error) {
-      showAlert(t.error, `${t.error} ${t.to}to ${isSelling ? `${t.Sell}` : `${t.Purchase}`} GDPCOIN. ${t.tryAgain}`);
+      showAlert(
+        t.error,
+        `${t.error} ${t.to}to ${
+          isSelling ? `${t.Sell}` : `${t.Purchase}`
+        } GDPCOIN. ${t.tryAgain}`
+      );
     } finally {
       setShowPinInput(false);
       setSelectedToken(null);
-      setPin('');
+      setPin("");
       setIsSelling(false);
     }
   };
@@ -203,9 +249,9 @@ export default function TokenScreen() {
     <View style={styles.container}>
       <Stack.Screen
         options={{
-          title: 'Token Market',
-          headerStyle: { backgroundColor: '#2196F3' },
-          headerTintColor: '#fff',
+          title: "Token Market",
+          headerStyle: { backgroundColor: "#2196F3" },
+          headerTintColor: "#fff",
         }}
       />
 
@@ -215,16 +261,16 @@ export default function TokenScreen() {
 
           <View style={{ flexDirection: "row" }}>
             <Text style={styles.currencySymbol}>$</Text>
-            <Text style={styles.balanceAmount}>{userBalance.toLocaleString()}</Text>
+            <Text style={styles.balanceAmount}>
+              {userBalance.toLocaleString()}
+            </Text>
           </View>
-
         </View>
 
         <View style={styles.balanceItem}>
           <Text style={styles.balanceTitle}>GDPCOIN</Text>
           <Text style={styles.balanceAmount}>{userTokens}</Text>
         </View>
-
       </View>
 
       <ScrollView style={styles.tokenList}>
@@ -232,13 +278,15 @@ export default function TokenScreen() {
           <View key={token.id} style={styles.tokenCard}>
             <View style={styles.tokenHeader}>
               <Image
-                source={require('@/assets/images/GDPCoin01.png')}
+                source={require("@/assets/images/GDPCoin01.png")}
                 style={styles.tokenImage}
                 resizeMode="contain"
               />
               <View style={styles.tokenHeaderInfo}>
                 <Text style={styles.tokenName}>{token.name}</Text>
-                <Text style={styles.tokenPrice}>$ {token.price.toFixed(3)}</Text>
+                <Text style={styles.tokenPrice}>
+                  $ {token.price.toLocaleString()}
+                </Text>
               </View>
             </View>
 
@@ -254,11 +302,18 @@ export default function TokenScreen() {
                   </TouchableOpacity>
                   <TextInput
                     style={styles.quantityInput}
-                    value={String(quantity[token.id] || 1)}
-                    onChangeText={(value) => handleQuantityInput(token.id, value)}
+                    value={
+                      quantity[token.id] === ""
+                        ? ""
+                        : String(quantity[token.id] || 1)
+                    }
+                    onChangeText={(value) =>
+                      handleQuantityInput(token.id, value)
+                    }
                     keyboardType="numeric"
-                    maxLength={3}
-                    selectTextOnFocus
+                    maxLength={100}
+                    placeholder="1"
+                    textAlign="center"
                   />
                   <TouchableOpacity
                     onPress={() => handleQuantityChange(token.id, 1)}
@@ -270,9 +325,11 @@ export default function TokenScreen() {
               </View>
 
               <View style={styles.totalSection}>
-                <Text style={styles.sectionLabel}>{t.total} {t.amount}</Text>
+                <Text style={styles.sectionLabel}>
+                  {t.total} {t.amount}
+                </Text>
                 <Text style={styles.totalPrice}>
-                  $ {calculateTotalPrice(token).toFixed(3)}
+                  $ {calculateTotalPrice(token).toLocaleString()}
                 </Text>
               </View>
 
@@ -302,7 +359,7 @@ export default function TokenScreen() {
         onClose={() => {
           setShowPinInput(false);
           setSelectedToken(null);
-          setPin('');
+          setPin("");
           setIsSelling(false);
         }}
         onConfirm={() => {
@@ -318,78 +375,77 @@ export default function TokenScreen() {
       <View style={styles.bottomButtonContainer}>
         <TouchableOpacity
           style={styles.navigationButton}
-          onPress={() => router.replace('/(tabs)')}
+          onPress={() => router.replace("/(tabs)")}
         >
           <Text style={styles.buttonText}>{t.back}</Text>
         </TouchableOpacity>
       </View>
     </View>
-
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   balanceContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#2196F3',
+    flexDirection: "row",
+    backgroundColor: "#2196F3",
     padding: 20,
-    justifyContent: 'space-around',
+    justifyContent: "space-around",
     ...Platform.select({
       ios: {
-        boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+        boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.1)",
       },
       android: {
         elevation: 4,
       },
       default: {
-        boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+        boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.1)",
       },
     }),
   },
   balanceItem: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   balanceTitle: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
     opacity: 0.8,
   },
   balanceAmount: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginTop: 5,
   },
   tokenList: {
     padding: 16,
   },
   tokenCard: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 16,
     marginBottom: 16,
-    overflow: 'hidden',
+    overflow: "hidden",
     ...Platform.select({
       ios: {
-        boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+        boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.1)",
       },
       android: {
         elevation: 3,
       },
       default: {
-        boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+        boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.1)",
       },
     }),
   },
   tokenHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: "#f0f0f0",
   },
   tokenHeaderInfo: {
     flex: 1,
@@ -402,102 +458,109 @@ const styles = StyleSheet.create({
     width: 48,
     height: 55,
     borderRadius: 24,
-    backgroundColor: 'blue',
+    backgroundColor: "blue",
   },
   tokenName: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
+    fontWeight: "bold",
+    color: "#1a1a1a",
   },
   tokenPrice: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
     marginTop: 4,
   },
   sectionLabel: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginBottom: 8,
   },
   quantitySection: {
     marginBottom: 16,
   },
   quantityContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f8f8f8',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#f8f8f8",
     borderRadius: 8,
     padding: 8,
+    maxWidth: "100%",
   },
   quantityButton: {
     padding: 8,
     borderWidth: 1,
-    borderColor: '#2196F3',
+    borderColor: "#2196F3",
     borderRadius: 8,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   quantityInput: {
-    fontSize: 16,
     marginHorizontal: 16,
-    minWidth: 40,
-    textAlign: 'center',
+    minWidth: 140,
+    maxWidth: "60%",
+    textAlign: "center",
     padding: 8,
+    paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: "#e0e0e0",
     borderRadius: 8,
-    color: '#2196F3',
-    backgroundColor: '#fff',
+    color: "black",
+    fontSize: 16,
+    fontWeight: "bold",
+    backgroundColor: "#fff",
+    flexShrink: 1,
+    flexGrow: 0,
+    letterSpacing: -0.5,
   },
   totalSection: {
     marginBottom: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   totalPrice: {
     fontSize: 24,
-    color: '#2196F3',
-    fontWeight: 'bold',
+    color: "#2196F3",
+    fontWeight: "bold",
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     gap: 12,
   },
   actionButton: {
     flex: 1,
     paddingVertical: 12,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   buyButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: "#2196F3",
   },
   sellButton: {
-    backgroundColor: '#FF5252',
+    backgroundColor: "#FF5252",
   },
   actionButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 16,
   },
   bottomButtonContainer: {
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
-    backgroundColor: '#fff',
+    borderTopColor: "#eee",
+    backgroundColor: "#fff",
   },
   navigationButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: "#2196F3",
     padding: 15,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   buttonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   currencySymbol: {
     fontSize: 12,
