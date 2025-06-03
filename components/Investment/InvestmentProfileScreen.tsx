@@ -39,44 +39,41 @@ const CountdownTimer: React.FC<{
   endDate: Date;
   onComplete: () => void;
   selectedLanguage: string;
-}> = ({
-  endDate,
-  onComplete,
-}) => {
-    const [timeLeft, setTimeLeft] = useState("");
-    const timerCompleted = useRef(false);
-    const { t } = useLanguage();
+}> = ({ endDate, onComplete }) => {
+  const [timeLeft, setTimeLeft] = useState("");
+  const timerCompleted = useRef(false);
+  const { t } = useLanguage();
 
-    useEffect(() => {
-      const timer = setInterval(() => {
-        const now = new Date().getTime();
-        const end = endDate.getTime();
-        const distance = end - now;
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date().getTime();
+      const end = endDate.getTime();
+      const distance = end - now;
 
-        if (distance > 0) {
-          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-          const hours = Math.floor(
-            (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-          );
-          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      if (distance > 0) {
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor(
+          (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+        );
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-          setTimeLeft(`${days}d ${hours}h ${minutes}m ${seconds}s`);
-        } else {
-          setTimeLeft(t.completed || 'Completed');
-          clearInterval(timer);
-          if (!timerCompleted.current) {
-            timerCompleted.current = true;
-            onComplete();
-          }
+        setTimeLeft(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+      } else {
+        setTimeLeft(t.completed || "Completed");
+        clearInterval(timer);
+        if (!timerCompleted.current) {
+          timerCompleted.current = true;
+          onComplete();
         }
-      }, 1000);
+      }
+    }, 1000);
 
-      return () => clearInterval(timer);
-    }, [endDate, onComplete, t]);
+    return () => clearInterval(timer);
+  }, [endDate, onComplete, t]);
 
-    return <Text style={styles.countdownText}>{timeLeft}</Text>;
-  };
+  return <Text style={styles.countdownText}>{timeLeft}</Text>;
+};
 
 export default function InvestmentProfileScreen({
   user,
@@ -87,7 +84,8 @@ export default function InvestmentProfileScreen({
   const [currentUser, setCurrentUser] = useState<User>(user);
   const [showPinModal, setShowPinModal] = useState(false);
   const [transactionPassword, setTransactionPassword] = useState("");
-  const [selectedPurchase, setSelectedPurchase] = useState<SharePurchase | null>(null);
+  const [selectedPurchase, setSelectedPurchase] =
+    useState<SharePurchase | null>(null);
 
   const { t, selectedLanguage } = useLanguage();
 
@@ -200,7 +198,8 @@ export default function InvestmentProfileScreen({
           transaction.update(userRef, { balance: newBalance });
 
           const purchaseRef = doc(db, "sharePurchases", purchase.id);
-          const newTotalRewardClaimed = (purchase.totalRewardClaimed || 0) + reward;
+          const newTotalRewardClaimed =
+            (purchase.totalRewardClaimed || 0) + reward;
           transaction.update(purchaseRef, {
             rewardClaimed: false,
             totalRewardClaimed: newTotalRewardClaimed,
@@ -221,7 +220,9 @@ export default function InvestmentProfileScreen({
 
         showAlert(
           t.success,
-          `${t.reward} $${reward.toFixed(2)} ${t.hasbeenaddedtoyourbalance}. ${t.Thestakingperiodhasrestarted}.`,
+          `${t.reward} $${reward.toFixed(2)} ${t.hasbeenaddedtoyourbalance}. ${
+            t.Thestakingperiodhasrestarted
+          }.`,
           [
             {
               text: t.ok,
@@ -233,10 +234,7 @@ export default function InvestmentProfileScreen({
           ]
         );
       } else {
-        showAlert(
-          t.error,
-          `${t.tryAgain}.`
-        );
+        showAlert(t.error, `${t.tryAgain}.`);
       }
     } catch (error) {
       console.error("Error claiming reward:", error);
@@ -259,7 +257,6 @@ export default function InvestmentProfileScreen({
     if (!selectedPurchase) return;
 
     try {
-
       // Verify transaction password
       const userDoc = await userService.getUserById(user.uid);
       if (!userDoc || userDoc.transactionPassword !== transactionPassword) {
@@ -278,7 +275,8 @@ export default function InvestmentProfileScreen({
 
         const userData = userDoc.data() as User;
         const newTokens = (userData.token || 0) + selectedPurchase.tokensPaid;
-        const newShares = (userData.shares || 0) - selectedPurchase.sharesPurchased;
+        const newShares =
+          (userData.shares || 0) - selectedPurchase.sharesPurchased;
 
         transaction.update(userRef, {
           token: newTokens,
@@ -313,15 +311,17 @@ export default function InvestmentProfileScreen({
   const renderPurchaseItem = (item: SharePurchase) => {
     const endDate = new Date(
       item.timestamp instanceof Timestamp
-        ? item.timestamp.toDate().getTime() + investmentTerm * 24 * 60 * 60 * 1000
+        ? item.timestamp.toDate().getTime() +
+          investmentTerm * 24 * 60 * 60 * 1000
         : new Date().getTime()
     );
     const now = new Date();
     const progress = Math.min(
-      (now.getTime() - (item.timestamp instanceof Timestamp
-        ? item.timestamp.toDate().getTime()
-        : now.getTime())) /
-      (investmentTerm * 24 * 60 * 60 * 1000),
+      (now.getTime() -
+        (item.timestamp instanceof Timestamp
+          ? item.timestamp.toDate().getTime()
+          : now.getTime())) /
+        (investmentTerm * 24 * 60 * 60 * 1000),
       1
     );
 
@@ -332,9 +332,11 @@ export default function InvestmentProfileScreen({
           GDPCOIN: {item.tokensPaid.toFixed(2)}
         </Text>
         <Text style={styles.timestamp}>
-          {`${t.start} ${t.date}: ${item.timestamp instanceof Timestamp
-            ? item.timestamp.toDate().toLocaleString()
-            : `${t.date} ${t.not} ${t.available}`}`}
+          {`${t.start} ${t.date}: ${
+            item.timestamp instanceof Timestamp
+              ? item.timestamp.toDate().toLocaleString()
+              : `${t.date} ${t.not} ${t.available}`
+          }`}
         </Text>
         <View style={styles.progressBarContainer}>
           <View style={[styles.progressBar, { width: `${progress * 100}%` }]} />
@@ -344,11 +346,11 @@ export default function InvestmentProfileScreen({
             ? `${(progress * 100).toFixed(0)}% ${t.to} ${t.reward}`
             : `${t.reward} ${t.available}`}
         </Text>
-        <CountdownTimer
+        {/* <CountdownTimer
           endDate={endDate}
           onComplete={handleCountdownComplete}
           selectedLanguage={selectedLanguage}
-        />
+        /> */}
         {calculateReward(item) > 0 && !item.rewardClaimed && (
           <TouchableOpacity
             style={styles.claimButton}
@@ -360,16 +362,21 @@ export default function InvestmentProfileScreen({
           </TouchableOpacity>
         )}
         {item.rewardClaimed && (
-          <Text style={styles.rewardClaimed}>{t.reward} {t.received}</Text>
+          <Text style={styles.rewardClaimed}>
+            {t.reward} {t.received}
+          </Text>
         )}
         <Text style={styles.totalRewardClaimed}>
-          {t.total} {t.reward} {t.received}: ${(item.totalRewardClaimed || 0).toFixed(2)}
+          {t.total} {t.reward} {t.received}: $
+          {(item.totalRewardClaimed || 0).toFixed(2)}
         </Text>
         <TouchableOpacity
           style={styles.stopButton}
           onPress={() => handleStop(item)}
         >
-          <Text style={styles.stopButtonText}>{t.stop} {t.Staking}</Text>
+          <Text style={styles.stopButtonText}>
+            {t.stop} {t.Staking}
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -390,7 +397,9 @@ export default function InvestmentProfileScreen({
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListEmptyComponent={
-          <Text style={styles.emptyText}>{`${t.no}${t.Staking}${t.Record}`}</Text>
+          <Text
+            style={styles.emptyText}
+          >{`${t.no}${t.Staking}${t.Record}`}</Text>
         }
       />
 
@@ -399,11 +408,18 @@ export default function InvestmentProfileScreen({
         onClose={resetForm}
         value={transactionPassword}
         onChange={setTransactionPassword}
-        onConfirm={() => { confirmStop(); resetForm(); setShowPinModal(false); }}
+        onConfirm={() => {
+          confirmStop();
+          resetForm();
+          setShowPinModal(false);
+        }}
         title={
           <>
             {`${t.confirm} ${t.stop} ${t.Staking}\n`}
-            <Text style={{ color: 'red', fontSize: 12 }}>{"      "}{t.you_will_not_get_a_reward}</Text>
+            <Text style={{ color: "red", fontSize: 12 }}>
+              {"      "}
+              {t.you_will_not_get_a_reward}
+            </Text>
           </>
         }
       />
@@ -411,7 +427,7 @@ export default function InvestmentProfileScreen({
       <View style={styles.bottomButtonContainer}>
         <TouchableOpacity
           style={styles.navigationButton}
-          onPress={() => router.replace('/(tabs)')}
+          onPress={() => router.replace("/(tabs)")}
         >
           <Text style={styles.buttonText}>{t.back}</Text>
         </TouchableOpacity>
@@ -423,121 +439,121 @@ export default function InvestmentProfileScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   listContainer: {
     padding: 16,
   },
   purchaseItem: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: "#f8f9fa",
     borderRadius: 10,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#eee',
+    borderColor: "#eee",
   },
   shareAmount: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     marginBottom: 8,
   },
   purchasePrice: {
     fontSize: 16,
-    color: '#004AAD',
+    color: "#004AAD",
     marginBottom: 8,
   },
   timestamp: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginBottom: 12,
   },
   progressBarContainer: {
     height: 8,
-    backgroundColor: '#eee',
+    backgroundColor: "#eee",
     borderRadius: 4,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginBottom: 8,
   },
   progressBar: {
-    height: '100%',
-    backgroundColor: 'green',
+    height: "100%",
+    backgroundColor: "green",
   },
   progressText: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   countdownText: {
     fontSize: 16,
-    color: '#004AAD',
-    fontWeight: '500',
-    textAlign: 'center',
+    color: "#004AAD",
+    fontWeight: "500",
+    textAlign: "center",
     marginBottom: 12,
   },
   claimButton: {
-    backgroundColor: '#004AAD',
+    backgroundColor: "#004AAD",
     padding: 12,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 8,
   },
   claimButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   rewardClaimed: {
-    color: '#4CAF50',
+    color: "#4CAF50",
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 8,
   },
   totalRewardClaimed: {
     fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
     marginBottom: 12,
   },
   stopButton: {
-    backgroundColor: '#f44336',
+    backgroundColor: "#f44336",
     padding: 12,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   stopButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
     marginTop: 32,
   },
   loader: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   bottomButtonContainer: {
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
-    backgroundColor: '#fff',
+    borderTopColor: "#eee",
+    backgroundColor: "#fff",
   },
   navigationButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: "#2196F3",
     padding: 15,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   buttonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

@@ -5,8 +5,6 @@ import {
   StyleSheet,
   FlatList,
   TextInput,
-  Button,
-  Alert,
   TouchableOpacity,
   ScrollView,
   Modal,
