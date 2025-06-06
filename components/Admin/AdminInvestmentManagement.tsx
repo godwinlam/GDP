@@ -354,15 +354,14 @@ export default function AdminInvestmentManagement() {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Share Options</Text>
-        <ScrollView style={styles.shareOptionsScroll}>
-          <FlatList
-            data={shareOptions}
-            keyExtractor={(item) => item.id}
-            renderItem={renderShareOption}
-            scrollEnabled={false}
-            nestedScrollEnabled={true}
-          />
-        </ScrollView>
+        <FlatList
+          data={shareOptions}
+          keyExtractor={(item) => item.id}
+          renderItem={renderShareOption}
+          style={styles.shareOptionsScroll}
+          contentContainerStyle={styles.shareOptionsContent}
+          showsVerticalScrollIndicator={true}
+        />
       </View>
 
       <View style={styles.section}>
@@ -393,15 +392,14 @@ export default function AdminInvestmentManagement() {
 
           {renderSearchBar()}
 
-          <ScrollView style={styles.modalScrollView}>
-            <FlatList
-              data={filteredInvestments}
-              renderItem={renderInvestment}
-              keyExtractor={(item) => item.id}
-              scrollEnabled={false}
-              nestedScrollEnabled={true}
-            />
-          </ScrollView>
+          <FlatList
+            data={filteredInvestments}
+            renderItem={renderInvestment}
+            keyExtractor={(item) => item.id}
+            style={styles.modalScrollView}
+            contentContainerStyle={styles.modalScrollContent}
+            showsVerticalScrollIndicator={true}
+          />
         </SafeAreaView>
       </Modal>
     </View>
@@ -540,6 +538,10 @@ const styles = StyleSheet.create({
   },
   shareOptionsScroll: {
     maxHeight: 200,
+    width: "100%",
+  },
+  shareOptionsContent: {
+    paddingBottom: 8,
   },
   modalContainer: {
     flex: 1,
@@ -559,7 +561,11 @@ const styles = StyleSheet.create({
   },
   modalScrollView: {
     flex: 1,
+    width: "100%",
+  },
+  modalScrollContent: {
     padding: 20,
+    paddingBottom: 32,
   },
   viewButton: {
     backgroundColor: "#2196F3",
