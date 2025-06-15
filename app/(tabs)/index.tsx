@@ -1,40 +1,42 @@
-import {
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-  ScrollView,
-  Image,
-  Alert,
-  Platform,
-  Modal,
-  Dimensions,
-} from "react-native";
-import { Text, View } from "@/components/Themed";
-import { useState, useEffect } from "react";
+import { auth, db } from "@/firebase";
+import HomeCarousel from "@/components/Carousel/HomeCarousel";
+import TopUpBalanceModal from "@/components/Modals/TopUpBalanceModal";
 import TransactionModal from "@/components/Transaction/TransactionModal";
 import WithdrawalModal from "@/components/Withdrawal/WithdrawalModal";
-import TopUpBalanceModal from "@/components/Modals/TopUpBalanceModal";
+import { languages, useLanguage } from "@/hooks/useLanguage";
+import { User } from "@/types/user";
 import {
   AntDesign,
   MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { auth, db } from "@/firebase";
-import HomeCarousel from "@/components/Carousel/HomeCarousel";
 import {
   collection,
   doc,
   getDoc,
   getDocs,
+  onSnapshot,
   query,
   where,
-  onSnapshot,
 } from "firebase/firestore";
-import { User } from "@/types/user";
 import LottieView from "lottie-react-native";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Image,
+  Modal,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import CountryFlag from "react-native-country-flag";
-import { languages, useLanguage } from "@/hooks/useLanguage";
 
 interface TabOneScreenProps {}
 
@@ -310,8 +312,9 @@ const TabOneScreen: React.FC<TabOneScreenProps> = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+      <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
           <Text style={styles.welcomeText}>{t.welcomeBack}</Text>
 
@@ -593,7 +596,8 @@ const TabOneScreen: React.FC<TabOneScreenProps> = () => {
           </TouchableOpacity>
         </Modal>
       </ScrollView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 };
 
@@ -614,6 +618,10 @@ const shadowStyle = Platform.select({
 });
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#F5F7FA",
+  },
   container: {
     flex: 1,
     backgroundColor: "#F5F7FA",
@@ -625,12 +633,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    paddingTop: Platform.OS === 'android' ? 40 : 0,
+    paddingBottom: 10,
+    paddingHorizontal: 16,
   },
   welcomeText: {
     fontSize: 24,
     fontWeight: "600",
     color: "#1E293B",
-    marginLeft: 20,
   },
   actionSection: {
     padding: 20,

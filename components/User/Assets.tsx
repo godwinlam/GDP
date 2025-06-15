@@ -314,6 +314,7 @@ export default function Assets() {
 
 const styles = StyleSheet.create({
   container: {
+    marginTop: Platform.OS === 'android' ? 30 : 0,
     flex: 1,
     backgroundColor: '#f5f5f5',
   },

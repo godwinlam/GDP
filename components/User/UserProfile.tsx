@@ -842,22 +842,22 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     backgroundColor: "#4CAF50",
-    padding: 12,
-    borderRadius: 8,
-    flex: 1,
     marginLeft: 8,
-  },
-  button: {
-    padding: 12,
     borderRadius: 8,
-    alignItems: "center",
     justifyContent: "center",
+    alignItems: "center",
+  }, 
+  cancelButton: {
+    backgroundColor: "red",
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
   },
   buttonText: {
     color: "white",
     fontSize: 16,
     fontWeight: "600",
-    textAlign: "center",
+    // textAlign: "center",
   },
   section: {
     backgroundColor: "white",
@@ -950,9 +950,6 @@ const styles = StyleSheet.create({
   },
   saveBankButton: {
     backgroundColor: "#2196F3",
-  },
-  cancelButton: {
-    backgroundColor: "red",
   },
   logoutButton: {
     backgroundColor: "#f44336",

@@ -91,8 +91,10 @@ export interface RewardSettings {
 
 export interface CarouselItem {
   id: string;
+  title: string;
+  description: string;
   imageUrl: string;
-  itemCode: string;
+  order: number;
 }
 
 export interface SharePurchase {

@@ -128,7 +128,7 @@ export default function WithdrawalModal({
       return false;
     }
 
-    const minAmount = 50;
+    const minAmount = 25;
     if (parseFloat(amount) < minAmount) {
       setError(`${t.minimumWithdrawalAmountIs}${minAmount}`);
       showAlert(t.error, `${t.minimumWithdrawalAmountIs}${minAmount}`);

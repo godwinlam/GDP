@@ -298,6 +298,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   countryFilterContainer: {
+    marginTop: Platform.OS === 'android' ? 30 : 0,
     backgroundColor: "#fff",
     paddingTop: 12,
     borderBottomWidth: 1,

@@ -4,7 +4,7 @@
     "slug": "GdpApp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": ["./assets/images/icon.png", "./assets/icons/font.ttf"],
+    "icon": "./assets/images/icon.png",
     "scheme": "gdpapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -29,6 +29,7 @@
       "package": "com.godwin00931.GdpApp"
     },
     "web": {
+      "icon": "./assets/icons/font.ttf",
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png"
