@@ -22,13 +22,19 @@ import {
 } from "firebase/auth";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import CountryFlag from "react-native-country-flag";
-import { useLanguage, languages } from '@/hooks/useLanguage';
+import { useLanguage, languages } from "@/hooks/useLanguage";
 import showAlert from "@/components/CustomAlert/ShowAlert";
 
-interface LoginScreenProps { }
+interface LoginScreenProps {}
 
 const LoginScreen: React.FC<LoginScreenProps> = () => {
-  const { selectedLanguage, showLanguageModal, setShowLanguageModal, t, handleLanguageChange } = useLanguage();
+  const {
+    selectedLanguage,
+    showLanguageModal,
+    setShowLanguageModal,
+    t,
+    handleLanguageChange,
+  } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -56,9 +62,7 @@ const LoginScreen: React.FC<LoginScreenProps> = () => {
     if (!isValidEmail(trimmedEmail)) {
       showAlert(
         t.error,
-        selectedEmailDomain === "@email1.com"
-          ? t.invalidEmail
-          : t.invalidPhone
+        selectedEmailDomain === "@email1.com" ? t.invalidEmail : t.invalidPhone
       );
       return;
     }
@@ -82,7 +86,7 @@ const LoginScreen: React.FC<LoginScreenProps> = () => {
       }
 
       await sendPasswordResetEmail(auth, trimmedEmail.toLowerCase());
-     showAlert(t.success, t.resetPasswordSuccess, [
+      showAlert(t.success, t.resetPasswordSuccess, [
         {
           text: t.confirm,
           onPress: () => {
@@ -112,9 +116,7 @@ const LoginScreen: React.FC<LoginScreenProps> = () => {
     if (!isValidEmail(trimmedEmail)) {
       showAlert(
         t.error,
-        selectedEmailDomain === "@email1.com"
-          ? t.invalidEmail
-          : t.invalidPhone
+        selectedEmailDomain === "@email1.com" ? t.invalidEmail : t.invalidPhone
       );
       return;
     }
@@ -129,16 +131,13 @@ const LoginScreen: React.FC<LoginScreenProps> = () => {
       router.replace("/(tabs)");
     } catch (error) {
       console.error("Login error:", error);
-      showAlert(
-        t.error,
-        error instanceof Error ? error.message : t.loginError
-      );
+      showAlert(t.error, t.invalidEmail);
     } finally {
       setLoading(false);
     }
   };
 
-  const renderLanguageOption = (lang: typeof languages[0]) => (
+  const renderLanguageOption = (lang: (typeof languages)[0]) => (
     <TouchableOpacity
       key={lang.code}
       style={[
@@ -147,7 +146,11 @@ const LoginScreen: React.FC<LoginScreenProps> = () => {
       ]}
       onPress={() => handleLanguageChange(lang.code)}
     >
-      <CountryFlag isoCode={lang.isoCode} size={24} style={{ marginRight: 8 }} />
+      <CountryFlag
+        isoCode={lang.isoCode}
+        size={24}
+        style={{ marginRight: 8 }}
+      />
       <Text
         style={[
           styles.languageOptionText,
@@ -210,7 +213,9 @@ const LoginScreen: React.FC<LoginScreenProps> = () => {
               value={resetEmail}
               onChangeText={setResetEmail}
               keyboardType={
-                selectedEmailDomain === "@email1.com" ? "email-address" : "numeric"
+                selectedEmailDomain === "@email1.com"
+                  ? "email-address"
+                  : "numeric"
               }
               autoCapitalize="none"
             />
@@ -220,9 +225,7 @@ const LoginScreen: React.FC<LoginScreenProps> = () => {
                 style={styles.cancelButton}
                 onPress={() => setShowForgotPassword(false)}
               >
-                <Text style={styles.cancelButtonText}>
-                  {t.cancel}
-                </Text>
+                <Text style={styles.cancelButtonText}>{t.cancel}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.confirmButton}
@@ -243,29 +246,30 @@ const LoginScreen: React.FC<LoginScreenProps> = () => {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.content}>
-
           <View style={styles.formContainer}>
             <TouchableOpacity
-            style={styles.languageButton}
-            onPress={() => setShowLanguageModal(true)}
-          >
-            {(() => {
-              const selectedLang = languages.find((lang) => lang.code === selectedLanguage) || languages[0];
-              return (
-                <>
-                  <CountryFlag 
-                    isoCode={selectedLang.isoCode} 
-                    size={24} 
-                    style={{ marginRight: 8 }} 
-                  />
-                  <Text style={styles.languageButtonText}>
-                    {selectedLang.name}
-                  </Text>
-                  <AntDesign name="down" size={16} color="#666" />
-                </>
-              );
-            })()}
-          </TouchableOpacity>
+              style={styles.languageButton}
+              onPress={() => setShowLanguageModal(true)}
+            >
+              {(() => {
+                const selectedLang =
+                  languages.find((lang) => lang.code === selectedLanguage) ||
+                  languages[0];
+                return (
+                  <>
+                    <CountryFlag
+                      isoCode={selectedLang.isoCode}
+                      size={24}
+                      style={{ marginRight: 8 }}
+                    />
+                    <Text style={styles.languageButtonText}>
+                      {selectedLang.name}
+                    </Text>
+                    <AntDesign name="down" size={16} color="#666" />
+                  </>
+                );
+              })()}
+            </TouchableOpacity>
 
             <Image
               source={require("../../assets/images/GDP-logo-02.png")}
@@ -281,7 +285,7 @@ const LoginScreen: React.FC<LoginScreenProps> = () => {
                 style={[
                   styles.methodButton,
                   selectedEmailDomain === "@email1.com" &&
-                  styles.methodButtonActive,
+                    styles.methodButtonActive,
                 ]}
                 onPress={() => setSelectedEmailDomain("@email1.com")}
               >
@@ -289,7 +293,7 @@ const LoginScreen: React.FC<LoginScreenProps> = () => {
                   style={[
                     styles.methodButtonText,
                     selectedEmailDomain === "@email1.com" &&
-                    styles.methodButtonTextActive,
+                      styles.methodButtonTextActive,
                   ]}
                 >
                   {t.email}
@@ -299,7 +303,7 @@ const LoginScreen: React.FC<LoginScreenProps> = () => {
                 style={[
                   styles.methodButton,
                   selectedEmailDomain === "@email2.com" &&
-                  styles.methodButtonActive,
+                    styles.methodButtonActive,
                 ]}
                 onPress={() => setSelectedEmailDomain("@email2.com")}
               >
@@ -307,7 +311,7 @@ const LoginScreen: React.FC<LoginScreenProps> = () => {
                   style={[
                     styles.methodButtonText,
                     selectedEmailDomain === "@email2.com" &&
-                    styles.methodButtonTextActive,
+                      styles.methodButtonTextActive,
                   ]}
                 >
                   {t.phone}
@@ -365,9 +369,7 @@ const LoginScreen: React.FC<LoginScreenProps> = () => {
             </TouchableOpacity>
 
             <View style={styles.registerContainer}>
-              <Text style={styles.registerText}>
-                {t.dontHaveAccount}
-              </Text>
+              <Text style={styles.registerText}>{t.dontHaveAccount}</Text>
               <TouchableOpacity onPress={() => router.push("/(auth)/register")}>
                 <Text style={styles.registerLink}>{t.register}</Text>
               </TouchableOpacity>
@@ -377,9 +379,7 @@ const LoginScreen: React.FC<LoginScreenProps> = () => {
               style={styles.forgotPasswordButton}
               onPress={() => setShowForgotPassword(true)}
             >
-              <Text style={styles.forgotPasswordText}>
-                {t.forgotPassword}
-              </Text>
+              <Text style={styles.forgotPasswordText}>{t.forgotPassword}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -399,7 +399,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     minHeight: height,
     paddingVertical: 15,
-    
   },
   content: {
     flex: 1,
@@ -417,13 +416,13 @@ const styles = StyleSheet.create({
     padding: 20,
     ...Platform.select({
       ios: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
       },
       android: {
         elevation: 3,
       },
       default: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
       },
     }),
   },
@@ -465,16 +464,15 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     ...Platform.select({
       ios: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
       },
       android: {
         elevation: 3,
       },
       default: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
       },
     }),
-    
   },
   buttonText: {
     color: "#fff",
@@ -505,13 +503,13 @@ const styles = StyleSheet.create({
     padding: 20,
     ...Platform.select({
       ios: {
-        boxShadow: '0px 3px 6px rgba(0, 0, 0, 0.2)',
+        boxShadow: "0px 3px 6px rgba(0, 0, 0, 0.2)",
       },
       android: {
         elevation: 5,
       },
       default: {
-        boxShadow: '0px 3px 6px rgba(0, 0, 0, 0.2)',
+        boxShadow: "0px 3px 6px rgba(0, 0, 0, 0.2)",
       },
     }),
   },
@@ -650,13 +648,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#007AFF",
     ...Platform.select({
       ios: {
-        boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.1)',
+        boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.1)",
       },
       android: {
         elevation: 2,
       },
       default: {
-        boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.1)',
+        boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.1)",
       },
     }),
   },
