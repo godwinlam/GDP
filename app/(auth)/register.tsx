@@ -739,7 +739,10 @@ export default function RegisterScreen() {
                 placeholder={t.transactionPassword}
                 value={transactionPassword}
                 keyboardType="numeric"
-                onChangeText={setTransactionPassword}
+                onChangeText={(text) => {
+                  const digits = text.replace(/[^0-9]/g, "").slice(0, 6);
+                  setTransactionPassword(digits);
+                }}
                 secureTextEntry={!showTransactionPassword}
                 placeholderTextColor="#666"
               />

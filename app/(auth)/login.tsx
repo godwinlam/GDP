@@ -19,6 +19,8 @@ import { auth, db } from "@/firebase";
 import {
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
+  GoogleAuthProvider,
+  signInWithCredential,
 } from "firebase/auth";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import CountryFlag from "react-native-country-flag";

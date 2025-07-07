@@ -81,12 +81,32 @@ export default function UserProfileScreen() {
     { id: "tng", name: "TNG", image: require("@/assets/images/TNG.png") },
     { id: "gopay", name: "gopay", image: require("@/assets/images/gopay.png") },
     { id: "MoMo", name: "MoMo", image: require("@/assets/images/MoMo.png") },
-    { id: "ZaloPay", name: "Zalo Pay", image: require("@/assets/images/ZaloPay.png") },
-    { id: "kakaoPay", name: "Kakao Pay", image: require("@/assets/images/KakaoPay.png") },
-    { id: "PayPay", name: "PayPay", image: require("@/assets/images/PayPay.png") },
-    { id: "TrueMoney", name: "TrueMoney", image: require("@/assets/images/truemoney_large_logo.jpg") },
+    {
+      id: "ZaloPay",
+      name: "Zalo Pay",
+      image: require("@/assets/images/ZaloPay.png"),
+    },
+    {
+      id: "kakaoPay",
+      name: "Kakao Pay",
+      image: require("@/assets/images/KakaoPay.png"),
+    },
+    {
+      id: "PayPay",
+      name: "PayPay",
+      image: require("@/assets/images/PayPay.png"),
+    },
+    {
+      id: "TrueMoney",
+      name: "TrueMoney",
+      image: require("@/assets/images/truemoney_large_logo.jpg"),
+    },
     { id: "paytm", name: "Paytm", image: require("@/assets/images/paytm.png") },
-    { id: "yooMoney", name: "YooMoney", image: require("@/assets/images/YooMoney.png") },
+    {
+      id: "yooMoney",
+      name: "YooMoney",
+      image: require("@/assets/images/YooMoney.png"),
+    },
     { id: "other", name: `${digitalBankName} Other`, image: null },
   ];
 
@@ -491,11 +511,14 @@ export default function UserProfileScreen() {
           <TextInput
             style={[styles.input, styles.passwordInput]}
             value={editedUser?.transactionPassword || ""}
-            onChangeText={(text) =>
+            keyboardType={Platform.OS === "ios" ? "number-pad" : "numeric"}
+            maxLength={6}
+            onChangeText={(text) => {
+              const digits = text.replace(/[^0-9]/g, "").slice(0, 6);
               setEditedUser((prev) =>
-                prev ? { ...prev, transactionPassword: text } : prev
-              )
-            }
+                prev ? { ...prev, transactionPassword: digits } : prev
+              );
+            }}
             secureTextEntry={!showTransactionPassword}
             placeholder={`${t.enter} ${t.new} ${t.transactionPassword}`}
             placeholderTextColor="#666"
@@ -846,7 +869,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
-  }, 
+  },
   cancelButton: {
     backgroundColor: "red",
     borderRadius: 8,
