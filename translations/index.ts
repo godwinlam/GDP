@@ -297,6 +297,8 @@ interface Translation {
   shareRegistrationLink: string;
   copy: string;
   share: string;
+  market: string;
+  deal: string;
 
   // Allow other translations
   [key: string]: string;
@@ -626,6 +628,8 @@ const translations: { [key: string]: LanguageInfo } = {
       shareRegistrationLink: "Share Registration Link",
       copy: "Copy",
       share: "Share",
+      market: "Market",
+      deal: "Deal",
     },
   },
   zh: {
@@ -934,6 +938,8 @@ const translations: { [key: string]: LanguageInfo } = {
       shareRegistrationLink: "分享注册链接",
       copy: "复制",
       share: "分享",
+      market: "市场",
+      deal: "交易",
     },
   },
   id: {
@@ -1260,6 +1266,8 @@ const translations: { [key: string]: LanguageInfo } = {
       shareRegistrationLink: "Bagikan Tautan Pendaftaran",
       copy: "Salin",
       share: "Bagikan",
+      market: "Market",
+      deal: "Deal",
     },
   },
   hi: {
@@ -1587,6 +1595,8 @@ const translations: { [key: string]: LanguageInfo } = {
       shareRegistrationLink: "पंजीकरण लिंक साझा करें",
       copy: "कॉपी",
       share: "शेयर",
+      market: "मार्केट",
+      deal: "डील",
     },
   },
   ru: {
@@ -1913,6 +1923,8 @@ const translations: { [key: string]: LanguageInfo } = {
       shareRegistrationLink: "Поделиться ссылкой на регистрацию",
       copy: "Копировать",
       share: "Поделиться",
+      market: "Маркет",
+      deal: "Дел",
     },
   },
   ko: {
@@ -2238,6 +2250,8 @@ const translations: { [key: string]: LanguageInfo } = {
       shareRegistrationLink: "등록 링크 공유",
       copy: "복사",
       share: "공유",
+      market: "장터",
+      deal: "거래",
     },
   },
   ja: {
@@ -2561,6 +2575,8 @@ const translations: { [key: string]: LanguageInfo } = {
       shareRegistrationLink: "登録リンクを共有",
       copy: "コピー",
       share: "シェア",
+      market: "市場",
+      deal: "取引",
     },
   },
   vi: {
@@ -2885,6 +2901,8 @@ const translations: { [key: string]: LanguageInfo } = {
       shareRegistrationLink: "Chia sẻ liên kết đăng ký",
       copy: "Sao chép",
       share: "Chia sẻ",
+      market: "Thị trường",
+      deal: "Giao dịch",
     },
   },
   th: {
@@ -3206,6 +3224,8 @@ const translations: { [key: string]: LanguageInfo } = {
       shareRegistrationLink: "แชร์ลิงค์การลงทะเบียน",
       copy: "คัดลอก",
       share: "แชร์",
+      market: "ตลาด",
+      deal: "ธุรกรรม",
     },
   },
 };

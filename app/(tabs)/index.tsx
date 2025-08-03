@@ -508,10 +508,10 @@ const TabOneScreen: React.FC<TabOneScreenProps> = () => {
                 style={[styles.actionSquare, { backgroundColor: "#4CAF50" }]}
                 onPress={() => router.push("/payment-confirmation")}
               >
-                <MaterialIcons name="payments" size={24} color="white" />
+                <MaterialIcons name="approval" size={24} color="white" />
               </TouchableOpacity>
               <Text style={styles.actionLabel}>
-                {t.My}({t.OTC})
+                {t.My}({t.deal})
               </Text>
             </View>
 

@@ -143,7 +143,7 @@ export default function CustomTabBar({
       case "profile":
         return t.profile;
       case "OTC":
-        return t.OTC;
+        return t.market;
       case "admin":
         return t.admin;
       case "assets":
