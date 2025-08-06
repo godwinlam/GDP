@@ -18,7 +18,7 @@ interface PaymentDetails {
   sellerUsername: string;
   buyerUsername: string;
   gdpAmount: number;
-  price: number;
+  sellingPrice: number;
   transactionType: string;
   status: string;
   paymentMethod: {
@@ -136,7 +136,7 @@ export default function PaymentApprovalScreen() {
 
         const newBuyerGdpBalance = currentBuyerGdpBalance + paymentDetails.gdpAmount;
         const newSellerGdpBalance = currentSellerGdpBalance - paymentDetails.gdpAmount;
-        const newBuyerBalance = currentBuyerBalance + price;
+        const newBuyerBalance = currentBuyerBalance + paymentDetails.gdpAmount;
 
         // Update buyer's balances
         transaction.update(buyerRef, {
@@ -357,7 +357,8 @@ export default function PaymentApprovalScreen() {
           </View>
 
           <View style={styles.detailsContainer}>
-            <DetailRow label={t.amount} value={`${paymentDetails.gdpAmount} GDP`} />
+            <DetailRow label={t.price} value={`${paymentDetails.gdpAmount} USDT`} />
+            <DetailRow label={`${t.selling} ${t.price}`} value={`${paymentDetails.sellingPrice} ${t.local_currency}`} />
             <DetailRow label={t.buyer} value={paymentDetails.buyerUsername} />
             <DetailRow
               label={t.paymentMethod}

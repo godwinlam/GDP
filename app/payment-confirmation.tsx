@@ -21,8 +21,6 @@ import { db, storage } from '@/firebase';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '@/context/auth';
-import translations from '@/translations';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import showAlert from '@/components/CustomAlert/ShowAlert';
 import { useLanguage } from '@/hooks/useLanguage';
 
@@ -34,13 +32,14 @@ interface PaymentDetails {
   sellerUsername: string;
   buyerUsername: string;
   gdpAmount: number;
+  sellingPrice: number;
   transactionType: string;
   status: string;
   paymentMethod: {
     type: 'bank' | 'ewallet';
     bankName?: string;
     provider?: string;
-    accountNumber: string;
+    accountNumber: string;  
     accountName: string;
   };
   createdAt: any;
@@ -359,7 +358,7 @@ export default function PaymentConfirmationScreen() {
                   </Text>
                 </View>
                 <View style={styles.paymentCardContent}>
-                  <Text style={styles.amountText}>{payment.gdpAmount} USDT</Text>
+                  <Text style={styles.amountText}>{payment.sellingPrice} {t.local_currency}</Text>
                   <Text style={styles.dateText}>
                     {new Date(payment.createdAt.seconds * 1000).toLocaleDateString()}
                   </Text>
@@ -419,8 +418,9 @@ export default function PaymentConfirmationScreen() {
           </View>
 
           <View style={styles.detailsContainer}>
-            <DetailRow label={t.amount} value={`${paymentDetails.gdpAmount} GDP`} />
+            <DetailRow label={t.price} value={`${paymentDetails.gdpAmount} USDT`} />
             <DetailRow label={t.seller} value={paymentDetails.sellerUsername} />
+            <DetailRow label={`${t.selling} ${t.price}`} value={`${paymentDetails.sellingPrice} ${t.local_currency}`} />
             <DetailRow label={t.buyer} value={paymentDetails.buyerUsername} />
             <DetailRow
               label={t.paymentMethod}

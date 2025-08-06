@@ -201,6 +201,7 @@ export default function OTCListingDetail({ listingId, onClose }: ListingDetailPr
           listingId: listing.id,
           sellerId: listing.sellerId,
           sellerUsername: listing.sellerUsername,
+          sellingPrice: listing.sellingPrice,
           buyerId: currentUser.uid,
           buyerUsername: currentUser.username || currentUser.email,
           gdpAmount: listing.gdpAmount,
