@@ -8,8 +8,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  TouchableWithoutFeedback,
-  Keyboard,
   TouchableOpacity,
 } from "react-native";
 import { doc, updateDoc, setDoc, getDoc } from "firebase/firestore";
@@ -132,8 +130,7 @@ export default function AdminRewardManagement() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <ScrollView contentContainerStyle={styles.scrollViewContent}>
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Purchase Reward</Text>
               <Text style={styles.currentSettings}>
@@ -205,7 +202,6 @@ export default function AdminRewardManagement() {
               />
             </View>
           </ScrollView>
-        </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
     </View>
   );
